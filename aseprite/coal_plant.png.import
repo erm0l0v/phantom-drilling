@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfbqxaqsbvads"
-path="res://.godot/imported/steam_engine-Sheet.png-5a30f97cd895201e1ffce63827120a87.ctex"
+uid="uid://dgfeatmbshgc5"
+path="res://.godot/imported/coal_plant.png-0bd1b640bc0c99106f1134ed0d075241.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/steam_engine-Sheet.png"
-dest_files=["res://.godot/imported/steam_engine-Sheet.png-5a30f97cd895201e1ffce63827120a87.ctex"]
+source_file="res://aseprite/coal_plant.png"
+dest_files=["res://.godot/imported/coal_plant.png-0bd1b640bc0c99106f1134ed0d075241.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

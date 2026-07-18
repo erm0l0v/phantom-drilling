@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cq06i143nyfcb"
-path="res://.godot/imported/coal_plant-Sheet.png-880a7341737e5dff3703a871534549d1.ctex"
+uid="uid://duqpmuko1yhsx"
+path="res://.godot/imported/oxigen_factory.png-07cb463fc0d654bfe7a4b027485f550f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/coal_plant-Sheet.png"
-dest_files=["res://.godot/imported/coal_plant-Sheet.png-880a7341737e5dff3703a871534549d1.ctex"]
+source_file="res://assets/oxigen_factory.png"
+dest_files=["res://.godot/imported/oxigen_factory.png-07cb463fc0d654bfe7a4b027485f550f.ctex"]
 
 [params]
 
-compress/mode=3
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

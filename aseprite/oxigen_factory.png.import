@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjcihls3cos2"
-path="res://.godot/imported/tiles_example.png-bf6b765eec96165cdeb76d228d3513e4.ctex"
+uid="uid://h0xn8odlpn8l"
+path="res://.godot/imported/oxigen_factory.png-2a12875d6ba3142e0ebfea8a78b9a94c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tiles_example.png"
-dest_files=["res://.godot/imported/tiles_example.png-bf6b765eec96165cdeb76d228d3513e4.ctex"]
+source_file="res://aseprite/oxigen_factory.png"
+dest_files=["res://.godot/imported/oxigen_factory.png-2a12875d6ba3142e0ebfea8a78b9a94c.ctex"]
 
 [params]
 
