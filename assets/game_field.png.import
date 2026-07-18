@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/game_field.png-15d1ec40527c339c16832657d45ec8
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

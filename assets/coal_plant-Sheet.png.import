@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/coal_plant-Sheet.png-880a7341737e5dff3703a871
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
