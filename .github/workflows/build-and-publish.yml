@@ -2,7 +2,7 @@ name: Build and publish to itch.io
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main, master]
   workflow_dispatch:
 
 env:
@@ -31,7 +31,7 @@ jobs:
           curl -L -o /tmp/butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
           unzip -q /tmp/butler.zip -d /tmp/butler
           chmod +x /tmp/butler/butler
-          VERSION="${GITHUB_REF_NAME}"
+          VERSION="${{ github.run_number }}-${GITHUB_SHA::7}"
           for f in "${{ steps.export.outputs.archive_directory }}"/*; do
             name=$(basename "$f")
             case "$name" in
