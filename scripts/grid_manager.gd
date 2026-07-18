@@ -5,7 +5,10 @@ const CELL_SIZE := 32
 const COLS := 6
 const ROWS := 6
 
-const NEIGHBOR_DIRS: Array[Vector2i] = [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]
+const NEIGHBOR_DIRS: Array[Vector2i] = [
+	Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0),
+	Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(1, 1),
+]
 
 var _building_types: Dictionary = {} # Vector2i(col,row) -> BuildingData.BuildingType
 var _cell_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D
@@ -38,8 +41,9 @@ func can_stamp(cells: Array[Vector2i]) -> bool:
 
 
 # Overwrites the given cells with building_type (replacing whatever was
-# there), then recomputes tile art for those cells and their immediate
-# neighbors so same-type borders disappear and newly-exposed edges reappear.
+# there), then recomputes tile art for those cells and their 8 neighbors
+# (orthogonal + diagonal, since corner tiles depend on diagonal occupancy too)
+# so same-type borders disappear and newly-exposed edges reappear.
 func stamp(cells: Array[Vector2i], building_type: int) -> void:
 	var touched: Array[Vector2i] = []
 	for cell in cells:
@@ -58,7 +62,11 @@ func stamp(cells: Array[Vector2i], building_type: int) -> void:
 func _update_cell_sprite(cell: Vector2i) -> void:
 	var building_type: int = _building_types[cell]
 	var mask := _connectivity_mask(cell, building_type)
-	var tile_index: int = TetrominoData.CONNECTIVITY_TILE[mask]
+	var diagonal_filled := true
+	if TetrominoData.DIAGONAL_OFFSET.has(mask):
+		var diagonal_cell: Vector2i = cell + TetrominoData.DIAGONAL_OFFSET[mask]
+		diagonal_filled = _building_types.get(diagonal_cell, -1) == building_type
+	var tile_index: int = TetrominoData.tile_for_mask(mask, diagonal_filled)
 	var sprite: Sprite2D = _cell_sprites.get(cell)
 	if sprite == null:
 		sprite = Sprite2D.new()

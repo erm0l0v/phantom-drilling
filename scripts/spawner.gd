@@ -11,9 +11,10 @@ var current_piece: Piece = null
 func spawn_next() -> void:
 	var type: TetrominoData.ShapeType = randi() % TetrominoData.ShapeType.size()
 	var building_type: BuildingData.BuildingType = randi() % BuildingData.BuildingType.size()
+	var rotation: int = randi() % 4
 	var piece: Piece = PieceScene.instantiate()
 	pieces_container.add_child(piece)
-	piece.setup(type, STAGING_ANCHOR, building_type)
+	piece.setup(type, STAGING_ANCHOR, building_type, rotation)
 	piece.placed.connect(_on_piece_placed)
 	current_piece = piece
 

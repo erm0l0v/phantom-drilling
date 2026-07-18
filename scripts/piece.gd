@@ -22,20 +22,13 @@ var _tile_atlas_cache: Dictionary = {} # tile index (1-based) -> AtlasTexture
 @onready var cells: Node2D = $Cells
 
 
-func setup(type: TetrominoData.ShapeType, spawn_pos: Vector2, type_of_building: BuildingData.BuildingType) -> void:
+func setup(type: TetrominoData.ShapeType, spawn_pos: Vector2, type_of_building: BuildingData.BuildingType, initial_rotation: int) -> void:
 	shape_type = type
 	building_type = type_of_building
 	staging_position = spawn_pos
 	position = spawn_pos
-	rotation_state = 0
+	rotation_state = initial_rotation
 	_rebuild_cells()
-
-
-func rotate_piece() -> void:
-	rotation_state = (rotation_state + 1) % 4
-	_rebuild_cells()
-	if is_dragging:
-		_update_preview()
 
 
 func _rebuild_cells() -> void:
@@ -133,6 +126,3 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		if is_dragging:
 			update_drag()
-	elif event is InputEventKey:
-		if event.pressed and event.keycode == KEY_R:
-			rotate_piece()

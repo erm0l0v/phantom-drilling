@@ -52,8 +52,8 @@ const SHAPES := {
 }
 
 # Bitmask of which sides of a cell touch another occupied cell of the same
-# piece (UP=1, DOWN=2, LEFT=4, RIGHT=8) -> 1-based tile index into
-# baseBuildingTiles.png (a 22x1 sheet of 32x32 tiles, index n at column n-1).
+# piece (UP=1, DOWN=2, LEFT=4, RIGHT=8) -> 1-based tile index into the
+# building tile sheets (24x1 sheets of 32x32 tiles, index n at column n-1).
 # Picking the tile this way means connected cells render seamlessly, with no
 # border on the shared edge. Derived from tmp/with_numbers.png.
 const CONNECTIVITY_TILE := {
@@ -75,6 +75,25 @@ const CONNECTIVITY_TILE := {
 	15: 14,  # up+down+left+right
 }
 
+# The four "two adjacent sides" corner masks each have a second tile variant
+# depending on whether the diagonal cell in the corner they form is also
+# occupied by the same type: filled uses the base CONNECTIVITY_TILE entry
+# (smooth inner corner), empty uses this variant (notched corner).
+const DIAGONAL_TILE_VARIANT := {
+	5: 9,  # up+left, diagonal empty
+	6: 23,  # down+left, diagonal empty
+	9: 24,  # up+right, diagonal empty
+	10: 8,  # down+right, diagonal empty
+}
+
+# Which diagonal offset to check for each mask in DIAGONAL_TILE_VARIANT.
+const DIAGONAL_OFFSET := {
+	5: Vector2i(-1, -1),  # up+left
+	6: Vector2i(-1, 1),  # down+left
+	9: Vector2i(1, -1),  # up+right
+	10: Vector2i(1, 1),  # down+right
+}
+
 
 static func connectivity_mask(offset: Vector2i, occupied: Array[Vector2i]) -> int:
 	var mask := 0
@@ -89,5 +108,15 @@ static func connectivity_mask(offset: Vector2i, occupied: Array[Vector2i]) -> in
 	return mask
 
 
+static func tile_for_mask(mask: int, diagonal_filled: bool) -> int:
+	if not diagonal_filled and DIAGONAL_TILE_VARIANT.has(mask):
+		return DIAGONAL_TILE_VARIANT[mask]
+	return CONNECTIVITY_TILE[mask]
+
+
 static func tile_for(offset: Vector2i, occupied: Array[Vector2i]) -> int:
-	return CONNECTIVITY_TILE[connectivity_mask(offset, occupied)]
+	var mask := connectivity_mask(offset, occupied)
+	var diagonal_filled := true
+	if DIAGONAL_OFFSET.has(mask):
+		diagonal_filled = occupied.has(offset + DIAGONAL_OFFSET[mask])
+	return tile_for_mask(mask, diagonal_filled)
