@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dtvvvd5jong4f"
-path="res://.godot/imported/coal_plant-sheet.png-0735682f2332e77ed0bcac48fe859d7f.ctex"
+uid="uid://bodotp3kxyf40"
+path="res://.godot/imported/broken.png-5cfec42a7f78b88fba61034568b5cb04.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/coal_plant-sheet.png"
-dest_files=["res://.godot/imported/coal_plant-sheet.png-0735682f2332e77ed0bcac48fe859d7f.ctex"]
+source_file="res://assets/broken.png"
+dest_files=["res://.godot/imported/broken.png-5cfec42a7f78b88fba61034568b5cb04.ctex"]
 
 [params]
 
@@ -37,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

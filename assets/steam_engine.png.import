@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c45aqhirapvlr"
-path="res://.godot/imported/steam_engine-sheet.png-49590e0bf155a913ec0d14e6277f8fc3.ctex"
+path="res://.godot/imported/steam_engine.png-2fe236b9bfc1f706747b01bb4318f50b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/steam_engine-sheet.png"
-dest_files=["res://.godot/imported/steam_engine-sheet.png-49590e0bf155a913ec0d14e6277f8fc3.ctex"]
+source_file="res://assets/steam_engine.png"
+dest_files=["res://.godot/imported/steam_engine.png-2fe236b9bfc1f706747b01bb4318f50b.ctex"]
 
 [params]
 

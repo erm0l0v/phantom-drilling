@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c0ia1edb8eewd"
-path="res://.godot/imported/game_field-sheet.png-2c40dff25c2d980745abe0e524b9c5f5.ctex"
+uid="uid://b0nwb0wwuach0"
+path="res://.godot/imported/oxigen_factory.png-07cb463fc0d654bfe7a4b027485f550f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/game_field-sheet.png"
-dest_files=["res://.godot/imported/game_field-sheet.png-2c40dff25c2d980745abe0e524b9c5f5.ctex"]
+source_file="res://assets/oxigen_factory.png"
+dest_files=["res://.godot/imported/oxigen_factory.png-07cb463fc0d654bfe7a4b027485f550f.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://drk42gla0cqi4"
-path="res://.godot/imported/gosts-sheet.png-9570743ad547331362c82fb1593f8b74.ctex"
+uid="uid://c0ia1edb8eewd"
+path="res://.godot/imported/game_field.png-15d1ec40527c339c16832657d45ec84f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/gosts-sheet.png"
-dest_files=["res://.godot/imported/gosts-sheet.png-9570743ad547331362c82fb1593f8b74.ctex"]
+source_file="res://assets/game_field.png"
+dest_files=["res://.godot/imported/game_field.png-15d1ec40527c339c16832657d45ec84f.ctex"]
 
 [params]
 
