@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://bd6i6032g3h07" path="res://scripts/depth_hud.gd" id="8_depth_hud"]
 [ext_resource type="Script" uid="uid://0a1ejtca3xik" path="res://scripts/ghost_field.gd" id="9_ghost_field"]
 [ext_resource type="Script" uid="uid://cb3hwj8d1rc3l" path="res://scripts/ghost_hud.gd" id="10_ghost_hud"]
+[ext_resource type="Script" path="res://scripts/next_piece_hud.gd" id="11_next_piece_hud"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -70,6 +71,27 @@ offset_bottom = 110.0
 theme_override_colors/font_color = Color(0.75, 0.6, 0.85, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ghosts: 0"
+
+[node name="NextPieceHUD" type="CanvasLayer" parent="."]
+script = ExtResource("11_next_piece_hud")
+
+[node name="Panel" type="PanelContainer" parent="NextPieceHUD"]
+offset_left = 520.0
+offset_top = 8.0
+offset_right = 632.0
+offset_bottom = 110.0
+
+[node name="VBox" type="VBoxContainer" parent="NextPieceHUD/Panel"]
+layout_mode = 2
+
+[node name="NextLabel" type="Label" parent="NextPieceHUD/Panel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+horizontal_alignment = 1
+text = "Next:"
+
+[node name="PreviewContainer" type="Node2D" parent="NextPieceHUD"]
+position = Vector2(544, 34)
 
 [node name="DepthHUD" type="CanvasLayer" parent="." unique_id=31404099]
 script = ExtResource("8_depth_hud")

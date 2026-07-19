@@ -15,7 +15,7 @@ dest_files=["res://.godot/imported/broken-Sheet.png-7ac6bc17a50fdb4b233c77679e59
 
 [params]
 
-compress/mode=3
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

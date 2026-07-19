@@ -1,9 +1,15 @@
 extends Node
 
 signal piece_spawned
+signal next_piece_changed(shape_type: int, building_type: int)
 
 var current_piece: Piece = null
 var _piece_scene: PackedScene
+
+# Look-ahead: the piece that will actually spawn next time spawn_next() is
+# called is decided in advance so it can be shown as a preview.
+var _next_shape: int
+var _next_building_type: int
 
 # BuildingType -> number of spawns since it was last picked. A type's pick
 # weight grows the longer it's been skipped, so building types even out
@@ -18,15 +24,24 @@ func _ready() -> void:
 	_reset_building_history()
 
 
+# Called explicitly (not from _ready()) so the caller can wire up
+# next_piece_changed listeners first and not miss the initial preview.
+func queue_next_preview() -> void:
+	_next_shape = randi() % TetrominoData.ShapeType.size()
+	_next_building_type = _pick_building_type()
+	next_piece_changed.emit(_next_shape, _next_building_type)
+
+
 func spawn_next() -> void:
-	var type: TetrominoData.ShapeType = randi() % TetrominoData.ShapeType.size()
-	var building_type := _pick_building_type()
+	var type: int = _next_shape
+	var building_type: int = _next_building_type
 	var piece: Piece = _piece_scene.instantiate()
 	pieces_container.add_child(piece)
 	piece.setup(type, building_type)
 	piece.placed.connect(_on_piece_placed)
 	current_piece = piece
 	piece_spawned.emit()
+	queue_next_preview()
 
 
 func _pick_building_type() -> int:
@@ -70,4 +85,5 @@ func reset() -> void:
 	for child in pieces_container.get_children():
 		child.queue_free()
 	_reset_building_history()
+	queue_next_preview()
 	spawn_next()

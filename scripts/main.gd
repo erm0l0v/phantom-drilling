@@ -5,6 +5,7 @@ extends Node2D
 @onready var game_over_ui: CanvasLayer = $GameOverUI
 @onready var ghost_field: Node2D = $GhostField
 @onready var ghost_hud: CanvasLayer = $GhostHUD
+@onready var next_piece_hud: CanvasLayer = $NextPieceHUD
 
 
 func _ready() -> void:
@@ -14,7 +15,9 @@ func _ready() -> void:
 	ghost_field.ghost_count_changed.connect(ghost_hud.set_count)
 	ghost_hud.set_count(0)
 	spawner.piece_spawned.connect(ghost_field.process_turn)
+	spawner.next_piece_changed.connect(next_piece_hud.show_next)
 	GameManager.start_new_game()
+	spawner.queue_next_preview()
 	spawner.spawn_next()
 
 

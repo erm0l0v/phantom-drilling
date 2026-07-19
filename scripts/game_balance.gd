@@ -23,6 +23,7 @@ extends Resource
 @export var grid_width: int = 6
 @export var grid_height: int = 6
 @export var meters_per_tile: float = 3.0
+@export var tunnel_height_tiles: int = 3
 
 @export_group("Field Expansion")
 @export var energy_expansion_threshold: float = 10.0

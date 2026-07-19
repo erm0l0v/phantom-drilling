@@ -20,7 +20,6 @@ const TILE_TUNNEL := 20
 const TILE_TUNNEL_LEFT := 18
 const TILE_TUNNEL_RIGHT := 19
 
-const TUNNEL_HEIGHT_TILES := 2
 const FUNNEL_HEIGHT_TILES := 2
 
 # Funnel below the field is field-width + 2 (one extra column overhanging
@@ -47,11 +46,12 @@ func rebuild() -> void:
 	var rows := GridManager.ROWS
 	var origin := GridManager.ORIGIN
 
-	var content_top := origin.y - TUNNEL_HEIGHT_TILES * TILE_SIZE
+	var tunnel_height: int = ResourceManager.balance.tunnel_height_tiles
+	var content_top := origin.y - tunnel_height * TILE_SIZE
 	var content_bottom := origin.y + rows * TILE_SIZE + FUNNEL_HEIGHT_TILES * TILE_SIZE
 
 	_paint_background(content_top, content_bottom)
-	_paint_tunnel(origin, cols)
+	_paint_tunnel(origin, cols, tunnel_height)
 	_paint_field(origin, cols, rows)
 	_paint_funnel(origin, rows)
 
@@ -68,9 +68,9 @@ func _paint_background(content_top: float, content_bottom: float) -> void:
 		y += TILE_SIZE
 
 
-func _paint_tunnel(origin: Vector2, cols: int) -> void:
-	for row in range(TUNNEL_HEIGHT_TILES):
-		var y := origin.y - (TUNNEL_HEIGHT_TILES - row) * TILE_SIZE
+func _paint_tunnel(origin: Vector2, cols: int, tunnel_height: int) -> void:
+	for row in range(tunnel_height):
+		var y := origin.y - (tunnel_height - row) * TILE_SIZE
 		_place(TILE_TUNNEL_LEFT, Vector2(origin.x - TILE_SIZE, y))
 		_place(TILE_TUNNEL_RIGHT, Vector2(origin.x + cols * TILE_SIZE, y))
 		for col in range(cols):

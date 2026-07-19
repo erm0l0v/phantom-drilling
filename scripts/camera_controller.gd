@@ -7,7 +7,6 @@ extends Camera2D
 
 const SCROLL_SPEED := 200.0
 const VIEWPORT_SIZE := Vector2(640, 360)
-const TUNNEL_HEIGHT_TILES := 2
 const FUNNEL_HEIGHT_TILES := 2
 
 var _min_y: float
@@ -37,7 +36,7 @@ func _on_grid_updated() -> void:
 
 
 func _recompute_bounds() -> void:
-	var content_top: float = GridManager.ORIGIN.y - TUNNEL_HEIGHT_TILES * GridManager.CELL_SIZE
+	var content_top: float = GridManager.ORIGIN.y - ResourceManager.balance.tunnel_height_tiles * GridManager.CELL_SIZE
 	var content_bottom: float = GridManager.ORIGIN.y + GridManager.ROWS * GridManager.CELL_SIZE + FUNNEL_HEIGHT_TILES * GridManager.CELL_SIZE
 	var content_height := content_bottom - content_top
 
