@@ -9,6 +9,10 @@ signal size_changed
 # own anchor_cell by the same amount and stay visually put.
 signal origin_row_shifted(delta: int)
 
+# Emitted after stamp() places a piece, with exactly the cells it touched
+# (already filtered to in-bounds ones) and their building type.
+signal cells_placed(cells: Array[Vector2i], building_type: int)
+
 const DEFAULT_ORIGIN := Vector2(224, 32)
 const CELL_SIZE := 32
 
@@ -26,6 +30,12 @@ var ROWS := 6
 const NEIGHBOR_DIRS: Array[Vector2i] = [
 	Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0),
 	Vector2i(-1, -1), Vector2i(1, -1), Vector2i(-1, 1), Vector2i(1, 1),
+]
+
+# Orthogonal-only - this is what ResourceManager groups tiles by for the
+# efficiency bonus (diagonal touches don't count as connected for that).
+const ORTHOGONAL_DIRS: Array[Vector2i] = [
+	Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0),
 ]
 
 const BROKEN_VISUALS_PATH := "res://resources/broken_visuals.tres"
@@ -66,6 +76,33 @@ func is_broken(cell: Vector2i) -> bool:
 
 func get_building_types() -> Dictionary:
 	return _building_types.duplicate()
+
+
+func get_cell_sprite(cell: Vector2i) -> Sprite2D:
+	return _cell_sprites.get(cell)
+
+
+# All cells of the same building type as `cell`, connected orthogonally -
+# matches how ResourceManager groups tiles for the efficiency bonus. Empty
+# if `cell` isn't a building.
+func get_connected_group(cell: Vector2i) -> Array[Vector2i]:
+	if not _building_types.has(cell):
+		return []
+	var building_type: int = _building_types[cell]
+	var group: Array[Vector2i] = []
+	var visited: Dictionary = {cell: true}
+	var stack: Array[Vector2i] = [cell]
+	while not stack.is_empty():
+		var current: Vector2i = stack.pop_back()
+		group.append(current)
+		for dir in ORTHOGONAL_DIRS:
+			var neighbor := current + dir
+			if visited.has(neighbor):
+				continue
+			if _building_types.get(neighbor, -1) == building_type:
+				visited[neighbor] = true
+				stack.append(neighbor)
+	return group
 
 
 func configure_size(width: int, height: int) -> void:
@@ -133,6 +170,7 @@ func stamp(cells: Array[Vector2i], building_type: int) -> void:
 			if _building_types.has(neighbor):
 				_update_cell_sprite(neighbor)
 	if not touched.is_empty():
+		cells_placed.emit(touched, building_type)
 		grid_changed.emit()
 
 

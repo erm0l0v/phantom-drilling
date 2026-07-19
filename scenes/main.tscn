@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://dn0q41h5n25gj" path="res://scripts/next_piece_hud.gd" id="11_next_piece_hud"]
 [ext_resource type="AudioStream" uid="uid://c1xntxa0gdjut" path="res://music/sound_track.mp3" id="12_music"]
 [ext_resource type="Script" path="res://scripts/pause_ui.gd" id="13_pause_ui"]
+[ext_resource type="Script" path="res://scripts/group_bonus_fx.gd" id="14_group_bonus_fx"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -34,6 +35,11 @@ script = ExtResource("7_camera")
 script = ExtResource("9_ghost_field")
 
 [node name="PiecesContainer" type="Node2D" parent="." unique_id=392230890]
+
+[node name="GroupBonusFX" type="Node2D" parent="."]
+script = ExtResource("14_group_bonus_fx")
+
+[node name="PopupLayer" type="CanvasLayer" parent="GroupBonusFX"]
 
 [node name="Spawner" type="Node" parent="." unique_id=1079665167]
 script = ExtResource("3_spawner")

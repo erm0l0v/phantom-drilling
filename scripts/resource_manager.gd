@@ -21,6 +21,15 @@ const RESOURCE_NAMES := {
 	ResourceType.ENERGY: "Energy",
 }
 
+# Matches the font colors on the Oxygen/Coal/Energy labels in ResourceHUD's
+# scene (main.tscn) - kept here too so other effects (e.g. GroupBonusFX) can
+# color-match a resource without hardcoding it a second time.
+const RESOURCE_COLORS := {
+	ResourceType.OXYGEN: Color(0.55, 0.85, 1, 1),
+	ResourceType.COAL: Color(0.75, 0.7, 0.65, 1),
+	ResourceType.ENERGY: Color(1, 0.85, 0.3, 1),
+}
+
 const RESOURCE_FOR_BUILDING := {
 	BuildingData.BuildingType.COAL_PLANT: ResourceType.COAL,
 	BuildingData.BuildingType.OXYGEN_FACTORY: ResourceType.OXYGEN,
@@ -28,10 +37,6 @@ const RESOURCE_FOR_BUILDING := {
 }
 
 const BALANCE_PATH := "res://resources/game_balance.tres"
-
-const ORTHOGONAL_DIRS: Array[Vector2i] = [
-	Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0),
-]
 
 var balance: GameBalance = load(BALANCE_PATH)
 
@@ -106,25 +111,9 @@ func _recompute_gross_rates() -> void:
 	for cell in building_types:
 		if visited.has(cell):
 			continue
-		var group := _flood_fill(cell, building_types, visited)
+		var group := GridManager.get_connected_group(cell)
+		for member in group:
+			visited[member] = true
 		var multiplier := balance.multiplier_for_group_size(group.size())
 		var resource: ResourceType = RESOURCE_FOR_BUILDING[building_types[cell]]
 		_gross_rates[resource] += group.size() * balance.base_rate_per_tile * multiplier
-
-
-func _flood_fill(start: Vector2i, building_types: Dictionary, visited: Dictionary) -> Array[Vector2i]:
-	var building_type: int = building_types[start]
-	var group: Array[Vector2i] = []
-	var stack: Array[Vector2i] = [start]
-	visited[start] = true
-	while not stack.is_empty():
-		var cell: Vector2i = stack.pop_back()
-		group.append(cell)
-		for dir in ORTHOGONAL_DIRS:
-			var neighbor := cell + dir
-			if visited.has(neighbor):
-				continue
-			if building_types.get(neighbor, -1) == building_type:
-				visited[neighbor] = true
-				stack.append(neighbor)
-	return group
