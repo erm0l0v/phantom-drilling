@@ -7,7 +7,7 @@ static var TEXTURES: Dictionary
 
 static func _static_init() -> void:
 	TEXTURES = {
-		BuildingType.COAL_PLANT: load("res://assets/coal_plant-Sheet.png"),
-		BuildingType.OXYGEN_FACTORY: load("res://assets/oxigen_factory-Sheet.png"),
-		BuildingType.STEAM_ENGINE: load("res://assets/steam_engine-Sheet.png"),
+		BuildingType.COAL_PLANT: preload("res://assets/coal_plant-Sheet.png"),
+		BuildingType.OXYGEN_FACTORY: preload("res://assets/oxigen_factory-Sheet.png"),
+		BuildingType.STEAM_ENGINE: preload("res://assets/steam_engine-Sheet.png"),
 	}
