@@ -130,9 +130,16 @@ func _atlas_for(tile_index: int) -> AtlasTexture:
 func process_turn() -> void:
 	# Snapshot first - acting on one ghost can discover new ones mid-loop
 	# (e.g. repairing a broken tile), and those must not act this same cycle.
+	var ready_cells: Array[Vector2i] = []
 	for cell in _ghost_sprites.keys():
 		if _ghost_ready.get(cell, false):
-			_act_on_ghost(cell)
+			ready_cells.append(cell)
+
+	ready_cells.shuffle()
+	var max_active: int = max(ResourceManager.balance.max_active_ghosts, 0)
+	for i in min(max_active, ready_cells.size()):
+		_act_on_ghost(ready_cells[i])
+
 	for cell in _ghost_sprites.keys():
 		_ghost_ready[cell] = true
 

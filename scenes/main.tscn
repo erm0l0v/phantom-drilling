@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://cb3hwj8d1rc3l" path="res://scripts/ghost_hud.gd" id="10_ghost_hud"]
 [ext_resource type="Script" uid="uid://dn0q41h5n25gj" path="res://scripts/next_piece_hud.gd" id="11_next_piece_hud"]
 [ext_resource type="AudioStream" uid="uid://c1xntxa0gdjut" path="res://music/sound_track.mp3" id="12_music"]
+[ext_resource type="Script" path="res://scripts/pause_ui.gd" id="13_pause_ui"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -155,3 +156,20 @@ horizontal_alignment = 1
 [node name="RestartButton" type="Button" parent="GameOverUI/Panel/VBox" unique_id=1503734126]
 layout_mode = 2
 text = "Restart"
+
+[node name="PauseUI" type="CanvasLayer" parent="."]
+script = ExtResource("13_pause_ui")
+
+[node name="Dim" type="ColorRect" parent="PauseUI"]
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0, 0, 0, 0.5)
+
+[node name="PauseLabel" type="Label" parent="PauseUI"]
+offset_left = 200.0
+offset_top = 160.0
+offset_right = 440.0
+offset_bottom = 200.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+text = "Paused"

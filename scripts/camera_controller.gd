@@ -1,11 +1,13 @@
 extends Camera2D
 
 # By default the camera tracks the highest (shallowest) placed building, so
-# it follows the stack as it grows. Space/Ctrl let the player look elsewhere
-# within the playfield (tunnel + grid + funnel); once the player has done
-# that, auto-follow stops fighting them until the next new game.
+# it follows the stack as it grows. Shift/Ctrl (held) or the mouse wheel
+# (per notch) let the player look elsewhere within the playfield (tunnel +
+# grid + funnel); once the player has done that, auto-follow stops fighting
+# them until the next new game.
 
 const SCROLL_SPEED := 200.0
+const WHEEL_STEP := 32.0
 const VIEWPORT_SIZE := Vector2(640, 360)
 const FUNNEL_HEIGHT_TILES := 2
 const RECENTER_DURATION := 0.2
@@ -74,7 +76,19 @@ func _process(delta: float) -> void:
 	if Input.is_action_pressed("camera_down"):
 		direction += 1.0
 	if direction != 0.0:
-		if not _manual_override and _recenter_tween != null and _recenter_tween.is_valid():
-			_recenter_tween.kill()
-		_manual_override = true
-		position.y = clamp(position.y + direction * SCROLL_SPEED * delta, _min_y, _max_y)
+		_manual_scroll(direction * SCROLL_SPEED * delta)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_manual_scroll(-WHEEL_STEP)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_manual_scroll(WHEEL_STEP)
+
+
+func _manual_scroll(amount: float) -> void:
+	if not _manual_override and _recenter_tween != null and _recenter_tween.is_valid():
+		_recenter_tween.kill()
+	_manual_override = true
+	position.y = clamp(position.y + amount, _min_y, _max_y)

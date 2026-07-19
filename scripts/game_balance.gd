@@ -44,6 +44,11 @@ extends Resource
 # higher means types that haven't shown up recently come back around faster.
 @export var building_type_weight_growth: float = 1.0
 
+@export_group("Ghosts")
+# Each turn, only this many ghosts (picked at random among the ones ready to
+# act) actually do anything - keeps a large infestation from snowballing.
+@export var max_active_ghosts: int = 10
+
 
 func multiplier_for_group_size(size: int) -> float:
 	if size < tier_start_size or tier_step_size <= 0:

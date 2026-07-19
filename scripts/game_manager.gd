@@ -2,12 +2,20 @@ extends Node
 
 signal game_over(depth_meters: float)
 signal game_restarted
+signal pause_toggled(is_paused: bool)
 
 var _next_expansion_threshold: float = 0.0
+var _is_game_over := false
 
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	ResourceManager.resources_changed.connect(_on_resources_changed)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("toggle_pause"):
+		toggle_pause()
 
 
 func start_new_game() -> void:
@@ -15,6 +23,7 @@ func start_new_game() -> void:
 	# resources_changed synchronously, which runs _on_resources_changed and
 	# compares against this threshold immediately.
 	_next_expansion_threshold = max(ResourceManager.balance.energy_expansion_threshold, 0.0001)
+	_is_game_over = false
 
 	ResourceManager.reset()
 	GridManager.configure_size(ResourceManager.balance.grid_width, ResourceManager.balance.grid_height)
@@ -32,8 +41,19 @@ func restart() -> void:
 func trigger_game_over() -> void:
 	if get_tree().paused:
 		return
+	_is_game_over = true
 	get_tree().paused = true
 	game_over.emit(get_depth_meters())
+
+
+# Manual pause via the P key - separate from the game-over freeze above, and
+# deliberately a no-op once the game's over (only Restart should un-freeze
+# that state).
+func toggle_pause() -> void:
+	if _is_game_over:
+		return
+	get_tree().paused = not get_tree().paused
+	pause_toggled.emit(get_tree().paused)
 
 
 func get_depth_meters() -> float:
