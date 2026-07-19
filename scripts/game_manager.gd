@@ -4,6 +4,7 @@ signal game_over(depth_meters: float)
 signal game_restarted
 
 var _next_expansion_threshold: float = 0.0
+var _next_expansion_increment: float = 0.0
 
 
 func _ready() -> void:
@@ -15,6 +16,7 @@ func start_new_game() -> void:
 	# resources_changed synchronously, which runs _on_resources_changed and
 	# compares against this threshold immediately.
 	_next_expansion_threshold = max(ResourceManager.balance.energy_expansion_threshold, 0.0001)
+	_next_expansion_increment = max(ResourceManager.balance.energy_expansion_increment, 0.0001)
 
 	ResourceManager.reset()
 	GridManager.configure_size(ResourceManager.balance.grid_width, ResourceManager.balance.grid_height)
@@ -47,10 +49,11 @@ func get_next_expansion_threshold() -> float:
 func _on_resources_changed(totals: Dictionary, _rates: Dictionary) -> void:
 	if get_tree().paused:
 		return
-	# Guard against a misconfigured (<=1) multiplier or a zero threshold
-	# turning this into an infinite loop - it must always strictly increase.
-	var multiplier: float = max(ResourceManager.balance.energy_expansion_multiplier, 1.0001)
+	var decay: float = clamp(ResourceManager.balance.energy_expansion_increment_decay, 0.0, 1.0)
 	var energy: float = totals[ResourceManager.ResourceType.ENERGY]
 	while energy >= _next_expansion_threshold:
 		GridManager.expand_down()
-		_next_expansion_threshold = max(_next_expansion_threshold * multiplier, _next_expansion_threshold + 0.0001)
+		# The +0.0001 floor guards against the increment decaying toward 0
+		# and stalling the threshold forever (which would infinite-loop here).
+		_next_expansion_threshold += max(_next_expansion_increment, 0.0001)
+		_next_expansion_increment *= decay

@@ -4,4 +4,3 @@
 
 [resource]
 script = ExtResource("1_balance")
-energy_expansion_multiplier = 1.3

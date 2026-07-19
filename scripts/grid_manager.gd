@@ -19,6 +19,10 @@ const NEIGHBOR_DIRS: Array[Vector2i] = [
 
 const BROKEN_VISUALS_PATH := "res://resources/broken_visuals.tres"
 
+# How long shifted sprites take to glide to their new position when the
+# field expands, instead of snapping there instantly.
+const EXPANSION_SHIFT_DURATION := 0.2
+
 var _building_types: Dictionary = {} # Vector2i(col,row) -> BuildingData.BuildingType
 var _cell_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D
 var _atlas_cache: Dictionary = {} # (building_type*100+tile_index) -> AtlasTexture
@@ -89,7 +93,8 @@ func _shift_sprites_down(dict: Dictionary) -> Dictionary:
 	for cell in dict:
 		var new_cell: Vector2i = cell + Vector2i(0, 1)
 		var sprite: Sprite2D = dict[cell]
-		sprite.position = cell_to_world(new_cell)
+		var tween := create_tween()
+		tween.tween_property(sprite, "position", cell_to_world(new_cell), EXPANSION_SHIFT_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		shifted[new_cell] = sprite
 	return shifted
 

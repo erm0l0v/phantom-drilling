@@ -8,10 +8,12 @@ extends Camera2D
 const SCROLL_SPEED := 200.0
 const VIEWPORT_SIZE := Vector2(640, 360)
 const FUNNEL_HEIGHT_TILES := 2
+const RECENTER_DURATION := 0.2
 
 var _min_y: float
 var _max_y: float
 var _manual_override := false
+var _recenter_tween: Tween
 
 
 func _ready() -> void:
@@ -57,7 +59,12 @@ func _recenter_on_highest_building() -> void:
 		top_row = 0
 
 	var target_y: float = GridManager.ORIGIN.y + top_row * GridManager.CELL_SIZE
-	position.y = clamp(target_y, _min_y, _max_y)
+	target_y = clamp(target_y, _min_y, _max_y)
+
+	if _recenter_tween != null and _recenter_tween.is_valid():
+		_recenter_tween.kill()
+	_recenter_tween = create_tween()
+	_recenter_tween.tween_property(self, "position:y", target_y, RECENTER_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 func _process(delta: float) -> void:
@@ -67,5 +74,7 @@ func _process(delta: float) -> void:
 	if Input.is_action_pressed("camera_down"):
 		direction += 1.0
 	if direction != 0.0:
+		if not _manual_override and _recenter_tween != null and _recenter_tween.is_valid():
+			_recenter_tween.kill()
 		_manual_override = true
 		position.y = clamp(position.y + direction * SCROLL_SPEED * delta, _min_y, _max_y)
