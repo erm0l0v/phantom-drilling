@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b0nwb0wwuach0"
-path="res://.godot/imported/oxigen_factory-Sheet.png-51d6fc78e60d06173d0861c1a6a32617.ctex"
+uid="uid://bodotp3kxyf40"
+path="res://.godot/imported/broken-Sheet.png-7ac6bc17a50fdb4b233c77679e59287d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/oxigen_factory-Sheet.png"
-dest_files=["res://.godot/imported/oxigen_factory-Sheet.png-51d6fc78e60d06173d0861c1a6a32617.ctex"]
+source_file="res://assets/broken-Sheet.png"
+dest_files=["res://.godot/imported/broken-Sheet.png-7ac6bc17a50fdb4b233c77679e59287d.ctex"]
 
 [params]
 
@@ -37,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

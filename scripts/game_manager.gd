@@ -40,6 +40,10 @@ func get_depth_meters() -> float:
 	return GridManager.ROWS * ResourceManager.balance.meters_per_tile
 
 
+func get_next_expansion_threshold() -> float:
+	return _next_expansion_threshold
+
+
 func _on_resources_changed(totals: Dictionary, _rates: Dictionary) -> void:
 	if get_tree().paused:
 		return

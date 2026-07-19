@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://byu00uobjx7hu" path="res://scripts/field_background.gd" id="6_field_background"]
 [ext_resource type="Script" uid="uid://bcu1aperoebf5" path="res://scripts/camera_controller.gd" id="7_camera"]
 [ext_resource type="Script" uid="uid://bd6i6032g3h07" path="res://scripts/depth_hud.gd" id="8_depth_hud"]
+[ext_resource type="Script" uid="uid://0a1ejtca3xik" path="res://scripts/ghost_field.gd" id="9_ghost_field"]
+[ext_resource type="Script" uid="uid://cb3hwj8d1rc3l" path="res://scripts/ghost_hud.gd" id="10_ghost_hud"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -18,6 +20,9 @@ script = ExtResource("6_field_background")
 script = ExtResource("7_camera")
 
 [node name="GridCells" type="Node2D" parent="." unique_id=771896810]
+
+[node name="GhostField" type="Node2D" parent="." unique_id=675482869]
+script = ExtResource("9_ghost_field")
 
 [node name="PiecesContainer" type="Node2D" parent="." unique_id=392230890]
 
@@ -54,8 +59,30 @@ theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 14
 text = "Energy: 0 (+0.0/s)"
 
+[node name="GhostHUD" type="CanvasLayer" parent="." unique_id=1944779239]
+script = ExtResource("10_ghost_hud")
+
+[node name="GhostLabel" type="Label" parent="GhostHUD" unique_id=1692206229]
+offset_left = 8.0
+offset_top = 90.0
+offset_right = 200.0
+offset_bottom = 110.0
+theme_override_colors/font_color = Color(0.75, 0.6, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "Ghosts: 0"
+
 [node name="DepthHUD" type="CanvasLayer" parent="." unique_id=31404099]
 script = ExtResource("8_depth_hud")
+
+[node name="NextExpansionLabel" type="Label" parent="DepthHUD" unique_id=41671773]
+offset_left = 400.0
+offset_top = 316.0
+offset_right = 636.0
+offset_bottom = 336.0
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "Next depth: 0 energy"
+horizontal_alignment = 2
 
 [node name="DepthLabel" type="Label" parent="DepthHUD" unique_id=1339369576]
 offset_left = 500.0
