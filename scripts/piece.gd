@@ -3,45 +3,45 @@ class_name Piece
 
 signal placed(piece: Piece)
 
-const VALID_TINT := Color(0.5, 1.0, 0.5)
-const INVALID_TINT := Color(1.0, 0.45, 0.45)
-
 var shape_type: TetrominoData.ShapeType
 var building_type: BuildingData.BuildingType
 var rotation_state: int = 0
 var is_placed: bool = false
-var is_dragging: bool = false
-var staging_position: Vector2
-var drag_grab_offset: Vector2
+var anchor_cell: Vector2i
 
-var _cell_offsets: Array[Vector2i] = []
-var _pending_cells: Array[Vector2i] = []
-var _pending_valid: bool = false
 var _tile_atlas_cache: Dictionary = {} # tile index (1-based) -> AtlasTexture
+var _fall_timer: float = 0.0
 
 @onready var cells: Node2D = $Cells
 
 
-func setup(type: TetrominoData.ShapeType, spawn_pos: Vector2, type_of_building: BuildingData.BuildingType, initial_rotation: int) -> void:
+func setup(type: TetrominoData.ShapeType, type_of_building: BuildingData.BuildingType) -> void:
 	shape_type = type
 	building_type = type_of_building
-	staging_position = spawn_pos
-	position = spawn_pos
-	rotation_state = initial_rotation
+	rotation_state = 0
+	anchor_cell = _spawn_anchor()
 	_rebuild_cells()
+	_update_position()
+
+
+# Shapes live inside a 4x4 box; spawn horizontally centered and fully above
+# row 0 (max offset row in the box is 3) so it never overlaps the stack.
+func _spawn_anchor() -> Vector2i:
+	var col := int((GridManager.COLS - 4) / 2.0)
+	return Vector2i(col, -4)
 
 
 func _rebuild_cells() -> void:
 	for child in cells.get_children():
 		child.queue_free()
-	_cell_offsets.assign(TetrominoData.SHAPES[shape_type][rotation_state])
-	for offset in _cell_offsets:
-		var tile_index := TetrominoData.tile_for(offset, _cell_offsets)
+	var offsets: Array[Vector2i] = []
+	offsets.assign(TetrominoData.SHAPES[shape_type][rotation_state])
+	for offset in offsets:
+		var tile_index := TetrominoData.tile_for(offset, offsets)
 		var sprite := Sprite2D.new()
 		sprite.texture = _atlas_for(tile_index)
 		sprite.centered = false
 		sprite.position = Vector2(offset) * GridManager.CELL_SIZE
-		sprite.rotation = 0.0
 		cells.add_child(sprite)
 
 
@@ -55,74 +55,83 @@ func _atlas_for(tile_index: int) -> AtlasTexture:
 	return _tile_atlas_cache[tile_index]
 
 
-func get_local_bounds() -> Rect2:
-	if _cell_offsets.is_empty():
-		return Rect2()
-	var cell_size := GridManager.CELL_SIZE
-	var min_pt := Vector2(_cell_offsets[0]) * cell_size
-	var max_pt := min_pt + Vector2(cell_size, cell_size)
-	for offset in _cell_offsets:
-		var p := Vector2(offset) * cell_size
-		min_pt.x = min(min_pt.x, p.x)
-		min_pt.y = min(min_pt.y, p.y)
-		max_pt.x = max(max_pt.x, p.x + cell_size)
-		max_pt.y = max(max_pt.y, p.y + cell_size)
-	return Rect2(min_pt, max_pt - min_pt)
+func _update_position() -> void:
+	position = GridManager.cell_to_world(anchor_cell)
 
 
-func contains_point(world_pos: Vector2) -> bool:
-	return get_local_bounds().has_point(world_pos - position)
-
-
-func start_drag() -> void:
-	is_dragging = true
-	drag_grab_offset = position - get_global_mouse_position()
-
-
-func update_drag() -> void:
-	position = get_global_mouse_position() + drag_grab_offset
-	_update_preview()
-
-
-func _update_preview() -> void:
-	var anchor_cell := GridManager.snap_anchor_cell(position)
-	_pending_cells.clear()
-	for offset in _cell_offsets:
-		_pending_cells.append(anchor_cell + offset)
-	_pending_valid = GridManager.can_stamp(_pending_cells)
-	_set_tint(VALID_TINT if _pending_valid else INVALID_TINT)
-
-
-func end_drag() -> void:
-	is_dragging = false
-	if _pending_valid:
-		GridManager.stamp(_pending_cells, building_type)
-		is_placed = true
-		hide()
-		placed.emit(self)
-		queue_free()
-	else:
-		position = staging_position
-		_set_tint(Color.WHITE)
-
-
-func _set_tint(color: Color) -> void:
-	for sprite in cells.get_children():
-		sprite.modulate = color
-
-
-func _unhandled_input(event: InputEvent) -> void:
+func _process(delta: float) -> void:
 	if is_placed:
 		return
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				if not is_dragging and contains_point(get_global_mouse_position()):
-					start_drag()
-					get_viewport().set_input_as_handled()
-			elif is_dragging:
-				end_drag()
-				get_viewport().set_input_as_handled()
-	elif event is InputEventMouseMotion:
-		if is_dragging:
-			update_drag()
+
+	if Input.is_action_just_pressed("ui_left"):
+		_try_move(Vector2i(-1, 0))
+	if Input.is_action_just_pressed("ui_right"):
+		_try_move(Vector2i(1, 0))
+	if Input.is_action_just_pressed("ui_up"):
+		_try_rotate()
+
+	_fall_timer += delta
+	var fall_interval: float = ResourceManager.balance.fall_interval_seconds
+	if Input.is_action_pressed("ui_down"):
+		fall_interval /= ResourceManager.balance.soft_drop_multiplier
+	if _fall_timer >= fall_interval:
+		_fall_timer -= fall_interval
+		_try_fall()
+
+
+func _try_move(offset: Vector2i) -> void:
+	var new_anchor := anchor_cell + offset
+	if _fits(new_anchor, rotation_state):
+		anchor_cell = new_anchor
+		_update_position()
+
+
+func _try_rotate() -> void:
+	var new_rotation := (rotation_state + 1) % 4
+	if _fits(anchor_cell, new_rotation):
+		rotation_state = new_rotation
+		_rebuild_cells()
+		_update_position()
+
+
+func _try_fall() -> void:
+	var new_anchor := anchor_cell + Vector2i(0, 1)
+	if _fits(new_anchor, rotation_state):
+		anchor_cell = new_anchor
+		_update_position()
+	else:
+		_lock()
+
+
+# Column must stay in bounds and cells can't overlap the stack; no lower
+# bound on row - pieces start above the field and fall into it.
+func _fits(candidate_anchor: Vector2i, candidate_rotation: int) -> bool:
+	for offset in TetrominoData.SHAPES[shape_type][candidate_rotation]:
+		var cell: Vector2i = candidate_anchor + offset
+		if cell.x < 0 or cell.x >= GridManager.COLS:
+			return false
+		if cell.y >= GridManager.ROWS:
+			return false
+		if GridManager.is_occupied(cell):
+			return false
+	return true
+
+
+func _lock() -> void:
+	is_placed = true
+	var cells_to_stamp: Array[Vector2i] = []
+	var overflowed := false
+	for offset in TetrominoData.SHAPES[shape_type][rotation_state]:
+		var cell: Vector2i = anchor_cell + offset
+		if cell.y < 0:
+			overflowed = true
+		cells_to_stamp.append(cell)
+
+	if overflowed:
+		GameManager.trigger_game_over()
+		queue_free()
+		return
+
+	GridManager.stamp(cells_to_stamp, building_type)
+	placed.emit(self)
+	queue_free()

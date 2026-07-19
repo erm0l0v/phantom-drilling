@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 @onready var restart_button: Button = $Panel/VBox/RestartButton
+@onready var depth_label: Label = $Panel/VBox/DepthLabel
 
 
 func _ready() -> void:
@@ -8,7 +9,8 @@ func _ready() -> void:
 	visible = false
 
 
-func show_game_over() -> void:
+func show_game_over(depth_meters: float) -> void:
+	depth_label.text = "Depth reached: %d m" % [depth_meters]
 	visible = true
 
 

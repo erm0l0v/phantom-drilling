@@ -1,7 +1,9 @@
 extends Node
 
-signal game_over
+signal game_over(depth_meters: float)
 signal game_restarted
+
+var _next_expansion_threshold: float = 0.0
 
 
 func _ready() -> void:
@@ -9,12 +11,14 @@ func _ready() -> void:
 
 
 func start_new_game() -> void:
-	# Reset resources/grid while still paused so the stale pre-reset totals
-	# (which may be <= 0, e.g. right after a game over) can't immediately
-	# re-trigger _on_resources_changed once we unpause below.
+	# Must be set before ResourceManager.reset() below - reset() emits
+	# resources_changed synchronously, which runs _on_resources_changed and
+	# compares against this threshold immediately.
+	_next_expansion_threshold = max(ResourceManager.balance.energy_expansion_threshold, 0.0001)
+
 	ResourceManager.reset()
+	GridManager.configure_size(ResourceManager.balance.grid_width, ResourceManager.balance.grid_height)
 	GridManager.clear()
-	_place_starting_buildings()
 	get_tree().paused = false
 
 
@@ -23,35 +27,26 @@ func restart() -> void:
 	game_restarted.emit()
 
 
-func _place_starting_buildings() -> void:
-	var balance := ResourceManager.balance
-	var layout := {
-		BuildingData.BuildingType.OXYGEN_FACTORY: balance.starting_oxygen_tiles,
-		BuildingData.BuildingType.COAL_PLANT: balance.starting_coal_tiles,
-		BuildingData.BuildingType.STEAM_ENGINE: balance.starting_energy_tiles,
-	}
-	var occupied: Array[Vector2i] = []
-	for building_type in layout:
-		for i in layout[building_type]:
-			var cell := _random_empty_cell(occupied)
-			occupied.append(cell)
-			GridManager.stamp([cell], building_type)
+# Called by a falling piece when it locks with any cell still above the top
+# of the field - the Tetris "topped out" loss condition.
+func trigger_game_over() -> void:
+	if get_tree().paused:
+		return
+	get_tree().paused = true
+	game_over.emit(get_depth_meters())
 
 
-func _random_empty_cell(occupied: Array[Vector2i]) -> Vector2i:
-	var cell := Vector2i.ZERO
-	while true:
-		cell = Vector2i(randi() % GridManager.COLS, randi() % GridManager.ROWS)
-		if not occupied.has(cell):
-			break
-	return cell
+func get_depth_meters() -> float:
+	return GridManager.ROWS * ResourceManager.balance.meters_per_tile
 
 
 func _on_resources_changed(totals: Dictionary, _rates: Dictionary) -> void:
 	if get_tree().paused:
 		return
-	var oxygen: float = totals[ResourceManager.ResourceType.OXYGEN]
+	# Guard against a misconfigured (<=1) multiplier or a zero threshold
+	# turning this into an infinite loop - it must always strictly increase.
+	var multiplier: float = max(ResourceManager.balance.energy_expansion_multiplier, 1.0001)
 	var energy: float = totals[ResourceManager.ResourceType.ENERGY]
-	if oxygen <= 0.0 or energy <= 0.0:
-		get_tree().paused = true
-		game_over.emit()
+	while energy >= _next_expansion_threshold:
+		GridManager.expand_down()
+		_next_expansion_threshold = max(_next_expansion_threshold * multiplier, _next_expansion_threshold + 0.0001)

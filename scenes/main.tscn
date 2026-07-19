@@ -1,17 +1,21 @@
 [gd_scene format=3 uid="uid://ba87j22ls0rou"]
 
 [ext_resource type="Script" uid="uid://cx4fpudbtar7a" path="res://scripts/main.gd" id="1_main"]
-[ext_resource type="Texture2D" uid="uid://bpw32eochgpxp" path="res://assets/game_field.png" id="2_field"]
 [ext_resource type="Script" uid="uid://cdtgvvhfskgxk" path="res://scripts/spawner.gd" id="3_spawner"]
-[ext_resource type="Script" path="res://scripts/resource_hud.gd" id="4_resource_hud"]
-[ext_resource type="Script" path="res://scripts/game_over_ui.gd" id="5_game_over_ui"]
+[ext_resource type="Script" uid="uid://c01b81ea81c6b" path="res://scripts/resource_hud.gd" id="4_resource_hud"]
+[ext_resource type="Script" uid="uid://bc5kcqv3g2f5w" path="res://scripts/game_over_ui.gd" id="5_game_over_ui"]
+[ext_resource type="Script" uid="uid://byu00uobjx7hu" path="res://scripts/field_background.gd" id="6_field_background"]
+[ext_resource type="Script" uid="uid://bcu1aperoebf5" path="res://scripts/camera_controller.gd" id="7_camera"]
+[ext_resource type="Script" uid="uid://bd6i6032g3h07" path="res://scripts/depth_hud.gd" id="8_depth_hud"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
 
-[node name="Background" type="Sprite2D" parent="." unique_id=1268927517]
-texture = ExtResource("2_field")
-centered = false
+[node name="FieldBackground" type="Node2D" parent="." unique_id=1268927517]
+script = ExtResource("6_field_background")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1306811874]
+script = ExtResource("7_camera")
 
 [node name="GridCells" type="Node2D" parent="." unique_id=771896810]
 
@@ -20,63 +24,78 @@ centered = false
 [node name="Spawner" type="Node" parent="." unique_id=1079665167]
 script = ExtResource("3_spawner")
 
-[node name="ResourceHUD" type="CanvasLayer" parent="."]
+[node name="ResourceHUD" type="CanvasLayer" parent="." unique_id=896163892]
 script = ExtResource("4_resource_hud")
 
-[node name="Panel" type="PanelContainer" parent="ResourceHUD"]
-layout_mode = 0
+[node name="Panel" type="PanelContainer" parent="ResourceHUD" unique_id=184069586]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 200.0
 offset_bottom = 84.0
 
-[node name="VBox" type="VBoxContainer" parent="ResourceHUD/Panel"]
+[node name="VBox" type="VBoxContainer" parent="ResourceHUD/Panel" unique_id=1598761854]
 layout_mode = 2
 
-[node name="OxygenLabel" type="Label" parent="ResourceHUD/Panel/VBox"]
+[node name="OxygenLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=1129592258]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "Oxygen: 0 (+0.0/s)"
 
-[node name="CoalLabel" type="Label" parent="ResourceHUD/Panel/VBox"]
+[node name="CoalLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=715144221]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.65, 1)
 theme_override_font_sizes/font_size = 14
 text = "Coal: 0 (+0.0/s)"
 
-[node name="EnergyLabel" type="Label" parent="ResourceHUD/Panel/VBox"]
+[node name="EnergyLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=849945108]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 14
 text = "Energy: 0 (+0.0/s)"
 
-[node name="GameOverUI" type="CanvasLayer" parent="."]
+[node name="DepthHUD" type="CanvasLayer" parent="." unique_id=31404099]
+script = ExtResource("8_depth_hud")
+
+[node name="DepthLabel" type="Label" parent="DepthHUD" unique_id=1339369576]
+offset_left = 500.0
+offset_top = 336.0
+offset_right = 636.0
+offset_bottom = 356.0
+theme_override_colors/font_color = Color(0.85, 0.85, 0.85, 1)
+theme_override_font_sizes/font_size = 14
+text = "Depth: 0 m"
+horizontal_alignment = 2
+
+[node name="GameOverUI" type="CanvasLayer" parent="." unique_id=37840981]
 process_mode = 3
 script = ExtResource("5_game_over_ui")
 
-[node name="Dim" type="ColorRect" parent="GameOverUI"]
-layout_mode = 0
+[node name="Dim" type="ColorRect" parent="GameOverUI" unique_id=1698315845]
 offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0, 0, 0, 0.6)
 
-[node name="Panel" type="PanelContainer" parent="GameOverUI"]
-layout_mode = 0
-offset_left = 200.0
-offset_top = 120.0
-offset_right = 440.0
-offset_bottom = 240.0
+[node name="Panel" type="PanelContainer" parent="GameOverUI" unique_id=503094365]
+offset_left = 190.0
+offset_top = 110.0
+offset_right = 450.0
+offset_bottom = 260.0
 
-[node name="VBox" type="VBoxContainer" parent="GameOverUI/Panel"]
+[node name="VBox" type="VBoxContainer" parent="GameOverUI/Panel" unique_id=299642979]
 layout_mode = 2
 
-[node name="GameOverLabel" type="Label" parent="GameOverUI/Panel/VBox"]
+[node name="GameOverLabel" type="Label" parent="GameOverUI/Panel/VBox" unique_id=821563892]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
-horizontal_alignment = 1
 text = "GameOver"
+horizontal_alignment = 1
 
-[node name="RestartButton" type="Button" parent="GameOverUI/Panel/VBox"]
+[node name="DepthLabel" type="Label" parent="GameOverUI/Panel/VBox" unique_id=740166268]
+layout_mode = 2
+text = "Depth reached: 0 m"
+horizontal_alignment = 1
+
+[node name="RestartButton" type="Button" parent="GameOverUI/Panel/VBox" unique_id=1503734126]
 layout_mode = 2
 text = "Restart"

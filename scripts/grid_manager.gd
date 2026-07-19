@@ -1,11 +1,16 @@
 extends Node
 
 signal grid_changed
+signal size_changed
 
 const ORIGIN := Vector2(224, 32)
 const CELL_SIZE := 32
-const COLS := 6
-const ROWS := 6
+
+# Mutable (not const) because the field size is meant to be resizable during
+# play in a future update; for now it's just seeded once from
+# GameBalance.grid_width/grid_height at game start via configure_size().
+var COLS := 6
+var ROWS := 6
 
 const NEIGHBOR_DIRS: Array[Vector2i] = [
 	Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0),
@@ -26,17 +31,44 @@ func cell_to_world(cell: Vector2i) -> Vector2:
 	return ORIGIN + Vector2(cell) * CELL_SIZE
 
 
-func snap_anchor_cell(world_pos: Vector2) -> Vector2i:
-	var local := (world_pos - ORIGIN) / CELL_SIZE
-	return Vector2i(round(local.x), round(local.y))
-
-
 func is_in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.x < COLS and cell.y >= 0 and cell.y < ROWS
 
 
+func is_occupied(cell: Vector2i) -> bool:
+	return _building_types.has(cell)
+
+
 func get_building_types() -> Dictionary:
 	return _building_types.duplicate()
+
+
+func configure_size(width: int, height: int) -> void:
+	COLS = width
+	ROWS = height
+	size_changed.emit()
+
+
+# Adds a new row of headroom by growing the field by 1 row and shifting every
+# already-placed building down by 1 to make room - the field gets one tile
+# deeper while everything sinks further into the ground.
+func expand_down() -> void:
+	ROWS += 1
+	var shifted_types: Dictionary = {}
+	for cell in _building_types:
+		shifted_types[cell + Vector2i(0, 1)] = _building_types[cell]
+	_building_types = shifted_types
+
+	var shifted_sprites: Dictionary = {}
+	for cell in _cell_sprites:
+		var new_cell: Vector2i = cell + Vector2i(0, 1)
+		var sprite: Sprite2D = _cell_sprites[cell]
+		sprite.position = cell_to_world(new_cell)
+		shifted_sprites[new_cell] = sprite
+	_cell_sprites = shifted_sprites
+
+	size_changed.emit()
+	grid_changed.emit()
 
 
 func clear() -> void:
@@ -45,13 +77,6 @@ func clear() -> void:
 	_cell_sprites.clear()
 	_building_types.clear()
 	grid_changed.emit()
-
-
-func can_stamp(cells: Array[Vector2i]) -> bool:
-	for cell in cells:
-		if not is_in_bounds(cell):
-			return false
-	return true
 
 
 # Overwrites the given cells with building_type (replacing whatever was

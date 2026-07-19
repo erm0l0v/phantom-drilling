@@ -13,8 +13,8 @@ func _ready() -> void:
 	spawner.spawn_next()
 
 
-func _on_game_over() -> void:
-	game_over_ui.show_game_over()
+func _on_game_over(depth_meters: float) -> void:
+	game_over_ui.show_game_over(depth_meters)
 
 
 func _on_game_restarted() -> void:

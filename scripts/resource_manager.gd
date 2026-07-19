@@ -6,6 +6,10 @@ extends Node
 # thresholds get that tier's efficiency multiplier applied to every tile in
 # the group. Tunable numbers live in resources/game_balance.tres - edit that
 # resource in the editor rather than changing constants here.
+#
+# Energy production is stock-capped rather than deficit-based: if there isn't
+# enough oxygen/coal on hand to cover what the steam engines could produce,
+# they simply produce less energy instead of driving oxygen/coal negative.
 
 signal resources_changed(totals: Dictionary, rates: Dictionary)
 
@@ -34,6 +38,10 @@ var balance: GameBalance = load(BALANCE_PATH)
 var totals: Dictionary = {}
 var rates: Dictionary = {}
 
+# Raw production per resource from placed building groups, before energy's
+# oxygen/coal cost is applied. Recomputed only when the grid changes.
+var _gross_rates: Dictionary = {}
+
 
 func _ready() -> void:
 	GridManager.grid_changed.connect(_on_grid_changed)
@@ -51,29 +59,47 @@ func reset() -> void:
 		ResourceType.COAL: 0.0,
 		ResourceType.ENERGY: 0.0,
 	}
-	_recompute_rates()
+	_gross_rates = rates.duplicate()
+	_recompute_gross_rates()
 	resources_changed.emit(totals, rates)
 
 
 func _process(delta: float) -> void:
-	var changed := false
-	for resource in rates:
-		var rate: float = rates[resource]
-		if rate != 0.0:
-			totals[resource] += rate * delta
-			changed = true
-	if changed:
-		resources_changed.emit(totals, rates)
+	if delta <= 0.0:
+		return
+	if _gross_rates[ResourceType.OXYGEN] == 0.0 and _gross_rates[ResourceType.COAL] == 0.0 and _gross_rates[ResourceType.ENERGY] == 0.0:
+		return
 
+	totals[ResourceType.OXYGEN] += _gross_rates[ResourceType.OXYGEN] * delta
+	totals[ResourceType.COAL] += _gross_rates[ResourceType.COAL] * delta
 
-func _on_grid_changed() -> void:
-	_recompute_rates()
+	var desired_energy: float = _gross_rates[ResourceType.ENERGY] * delta
+	var actual_energy := desired_energy
+	if balance.energy_oxygen_cost > 0.0:
+		actual_energy = min(actual_energy, totals[ResourceType.OXYGEN] / balance.energy_oxygen_cost)
+	if balance.energy_coal_cost > 0.0:
+		actual_energy = min(actual_energy, totals[ResourceType.COAL] / balance.energy_coal_cost)
+	actual_energy = max(0.0, actual_energy)
+
+	totals[ResourceType.OXYGEN] -= actual_energy * balance.energy_oxygen_cost
+	totals[ResourceType.COAL] -= actual_energy * balance.energy_coal_cost
+	totals[ResourceType.ENERGY] += actual_energy
+
+	var actual_energy_rate := actual_energy / delta
+	rates[ResourceType.ENERGY] = actual_energy_rate
+	rates[ResourceType.OXYGEN] = _gross_rates[ResourceType.OXYGEN] - actual_energy_rate * balance.energy_oxygen_cost
+	rates[ResourceType.COAL] = _gross_rates[ResourceType.COAL] - actual_energy_rate * balance.energy_coal_cost
+
 	resources_changed.emit(totals, rates)
 
 
-func _recompute_rates() -> void:
-	for resource in rates:
-		rates[resource] = 0.0
+func _on_grid_changed() -> void:
+	_recompute_gross_rates()
+
+
+func _recompute_gross_rates() -> void:
+	for resource in _gross_rates:
+		_gross_rates[resource] = 0.0
 
 	var building_types := GridManager.get_building_types()
 	var visited: Dictionary = {}
@@ -83,13 +109,7 @@ func _recompute_rates() -> void:
 		var group := _flood_fill(cell, building_types, visited)
 		var multiplier := balance.multiplier_for_group_size(group.size())
 		var resource: ResourceType = RESOURCE_FOR_BUILDING[building_types[cell]]
-		rates[resource] += group.size() * balance.base_rate_per_tile * multiplier
-
-	# Producing energy consumes oxygen and coal - energy's own rate is
-	# unaffected, it's oxygen/coal that get debited for what energy produced.
-	var energy_rate: float = rates[ResourceType.ENERGY]
-	rates[ResourceType.OXYGEN] -= energy_rate * balance.energy_oxygen_cost
-	rates[ResourceType.COAL] -= energy_rate * balance.energy_coal_cost
+		_gross_rates[resource] += group.size() * balance.base_rate_per_tile * multiplier
 
 
 func _flood_fill(start: Vector2i, building_types: Dictionary, visited: Dictionary) -> Array[Vector2i]:
