@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BrokenVisuals" format=3]
+[gd_resource type="Resource" script_class="BrokenVisuals" format=3 uid="uid://c82rc0hwny01d"]
 
 [ext_resource type="Script" uid="uid://7c33fcb3xcw" path="res://scripts/broken_visuals.gd" id="1_visuals"]
 [ext_resource type="Texture2D" uid="uid://bodotp3kxyf40" path="res://assets/broken-sheet.png" id="2_sheet"]

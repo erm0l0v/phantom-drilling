@@ -5,6 +5,12 @@ extends Node2D
 # column (the classic Tetris "hole"). Rendered with the same connectivity-
 # tiling scheme as buildings, just checking "is this neighbor also a ghost".
 #
+# Ghosts are permanent once discovered: this only ever ADDS newly-found
+# holes, never removes existing ones. They must stay put even if the thing
+# that originally covered them later goes away (e.g. a broken tile above a
+# ghost gets repair_broken()'d back into a ghost itself) - a ghost cell
+# should never wink out of existence.
+#
 # Each time a new piece spawns, every ghost looks at its 4 orthogonal
 # neighbors: a building there gets broken (stops producing); failing that, a
 # broken tile there turns into a new ghost (the infestation spreads);
@@ -20,41 +26,63 @@ const ORTHOGONAL_DIRS: Array[Vector2i] = [
 
 var _visuals: GhostVisuals = load(VISUALS_PATH)
 var _atlas_cache: Dictionary = {}
-var _ghost_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D
+var _ghost_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D, persists once created
 
 
 func _ready() -> void:
-	GridManager.grid_changed.connect(rebuild)
-	GridManager.size_changed.connect(rebuild)
-	rebuild()
+	GridManager.grid_changed.connect(_discover_and_refresh)
+	GridManager.size_changed.connect(_discover_and_refresh)
+	GridManager.origin_row_shifted.connect(_on_origin_row_shifted)
+	GameManager.game_restarted.connect(_on_game_restarted)
+	_discover_and_refresh()
 
 
-func rebuild() -> void:
+func _on_game_restarted() -> void:
 	for sprite in _ghost_sprites.values():
 		sprite.queue_free()
 	_ghost_sprites.clear()
+	ghost_count_changed.emit(0)
 
-	var ghost_cells := _compute_ghost_cells()
-	for cell in ghost_cells:
-		_ghost_sprites[cell] = null
-	for cell in ghost_cells:
-		_ghost_sprites[cell] = _make_ghost_sprite(cell)
 
-	ghost_count_changed.emit(_ghost_sprites.size())
+# GridManager.expand_down() moves ORIGIN up by one tile and bumps every
+# existing solid cell's row by the same amount to compensate, keeping
+# everything visually still (see grid_manager.gd). Ghosts aren't tracked by
+# GridManager, so they have to do the same compensation themselves.
+func _on_origin_row_shifted(delta: int) -> void:
+	var shifted: Dictionary = {}
+	for cell in _ghost_sprites:
+		shifted[cell + Vector2i(0, delta)] = _ghost_sprites[cell]
+	_ghost_sprites = shifted
+	_redraw_all()
+
+
+func _discover_and_refresh() -> void:
+	var discovered := false
+	for cell in _compute_hole_cells():
+		if not _ghost_sprites.has(cell):
+			_ghost_sprites[cell] = _make_ghost_sprite(cell)
+			discovered = true
+	_redraw_all()
+	if discovered:
+		ghost_count_changed.emit(_ghost_sprites.size())
+
+
+func _redraw_all() -> void:
+	for cell in _ghost_sprites:
+		var sprite: Sprite2D = _ghost_sprites[cell]
+		sprite.position = GridManager.cell_to_world(cell)
+		var pattern := TetrominoData.neighbor_pattern(cell, func(p): return _ghost_sprites.has(p))
+		sprite.texture = _atlas_for(TetrominoData.tile_for_pattern(pattern))
 
 
 func _make_ghost_sprite(cell: Vector2i) -> Sprite2D:
-	var pattern := TetrominoData.neighbor_pattern(cell, func(p): return _ghost_sprites.has(p))
-	var tile_index: int = TetrominoData.tile_for_pattern(pattern)
 	var sprite := Sprite2D.new()
 	sprite.centered = false
-	sprite.position = GridManager.cell_to_world(cell)
-	sprite.texture = _atlas_for(tile_index)
 	add_child(sprite)
 	return sprite
 
 
-func _compute_ghost_cells() -> Array[Vector2i]:
+func _compute_hole_cells() -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for col in range(GridManager.COLS):
 		var seen_solid := false

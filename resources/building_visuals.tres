@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="BuildingVisuals" format=3]
+[gd_resource type="Resource" script_class="BuildingVisuals" format=3 uid="uid://cllo0vp1sbxju"]
 
 [ext_resource type="Script" uid="uid://cult6rms4020q" path="res://scripts/building_visuals.gd" id="1_visuals"]
 [ext_resource type="Texture2D" uid="uid://dtvvvd5jong4f" path="res://assets/coal_plant-sheet.png" id="2_coal"]
