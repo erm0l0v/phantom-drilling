@@ -13,6 +13,7 @@ func _ready() -> void:
 	GameManager.game_restarted.connect(_on_game_restarted)
 	ghost_field.ghost_count_changed.connect(ghost_hud.set_count)
 	ghost_hud.set_count(0)
+	spawner.piece_spawned.connect(ghost_field.process_turn)
 	GameManager.start_new_game()
 	spawner.spawn_next()
 

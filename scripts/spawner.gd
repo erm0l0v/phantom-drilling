@@ -1,5 +1,7 @@
 extends Node
 
+signal piece_spawned
+
 var current_piece: Piece = null
 var _piece_scene: PackedScene
 
@@ -24,6 +26,7 @@ func spawn_next() -> void:
 	piece.setup(type, building_type)
 	piece.placed.connect(_on_piece_placed)
 	current_piece = piece
+	piece_spawned.emit()
 
 
 func _pick_building_type() -> int:
