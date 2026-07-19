@@ -26,15 +26,14 @@ extends Resource
 @export var tunnel_height_tiles: int = 3
 
 @export_group("Field Expansion")
-# Non-linear difficulty curve: each expansion needs energy_expansion_threshold
-# (level 1) plus a growing sum of increments. The increment starts at
-# energy_expansion_increment and shrinks by energy_expansion_increment_decay
-# each level, so early levels get noticeably harder fast while later ones
-# level off (a decay < 1 makes the threshold converge instead of growing
-# forever; decay = 1 gives constant increments, i.e. plain linear growth).
+# Difficulty curve: energy_expansion_threshold is level 1's requirement, then
+# each next level is next = current * energy_expansion_n + energy_expansion_k.
+# n=1 makes this a plain arithmetic sequence (constant step of k, i.e.
+# linear growth); n>1 grows increasingly faster, n<1 grows increasingly
+# slower (converges toward a limit).
 @export var energy_expansion_threshold: float = 10.0
-@export var energy_expansion_increment: float = 10.0
-@export var energy_expansion_increment_decay: float = 0.8
+@export var energy_expansion_n: float = 1.0
+@export var energy_expansion_k: float = 10.0
 
 @export_group("Falling Piece")
 @export var fall_interval_seconds: float = 0.8

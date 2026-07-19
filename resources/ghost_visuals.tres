@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="GhostVisuals" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="GhostVisuals" format=3]
 
-[ext_resource type="Script" path="res://scripts/ghost_visuals.gd" id="1_visuals"]
-[ext_resource type="Texture2D" uid="uid://drk42gla0cqi4" path="res://assets/gosts-Sheet.png" id="2_sheet"]
+[ext_resource type="Script" uid="uid://df5gueu2ghhan" path="res://scripts/ghost_visuals.gd" id="1_visuals"]
+[ext_resource type="Texture2D" uid="uid://drk42gla0cqi4" path="res://assets/gosts-sheet.png" id="2_sheet"]
 
 [resource]
 script = ExtResource("1_visuals")

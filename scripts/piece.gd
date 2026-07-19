@@ -22,6 +22,18 @@ func setup(type: TetrominoData.ShapeType, type_of_building: BuildingData.Buildin
 	anchor_cell = _spawn_anchor()
 	_rebuild_cells()
 	_update_position()
+	GridManager.origin_row_shifted.connect(_on_origin_row_shifted)
+
+
+# GridManager.expand_down() moves ORIGIN up by one tile and bumps every
+# existing cell's row by the same amount to compensate, keeping everything
+# visually still. This piece isn't tracked by GridManager, so it has to do
+# the same compensation itself or it would appear to jump.
+func _on_origin_row_shifted(delta: int) -> void:
+	if is_placed:
+		return
+	anchor_cell.y += delta
+	_update_position()
 
 
 # Shapes live inside a 4x4 box; spawn horizontally centered and fully above

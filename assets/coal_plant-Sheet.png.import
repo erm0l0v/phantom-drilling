@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtvvvd5jong4f"
-path="res://.godot/imported/coal_plant-Sheet.png-880a7341737e5dff3703a871534549d1.ctex"
+path="res://.godot/imported/coal_plant-sheet.png-0735682f2332e77ed0bcac48fe859d7f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/coal_plant-Sheet.png"
-dest_files=["res://.godot/imported/coal_plant-Sheet.png-880a7341737e5dff3703a871534549d1.ctex"]
+source_file="res://assets/coal_plant-sheet.png"
+dest_files=["res://.godot/imported/coal_plant-sheet.png-0735682f2332e77ed0bcac48fe859d7f.ctex"]
 
 [params]
 

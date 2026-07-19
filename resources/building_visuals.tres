@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="BuildingVisuals" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="BuildingVisuals" format=3]
 
-[ext_resource type="Script" path="res://scripts/building_visuals.gd" id="1_visuals"]
-[ext_resource type="Texture2D" uid="uid://dtvvvd5jong4f" path="res://assets/coal_plant-Sheet.png" id="2_coal"]
-[ext_resource type="Texture2D" uid="uid://b0nwb0wwuach0" path="res://assets/oxigen_factory-Sheet.png" id="3_oxygen"]
-[ext_resource type="Texture2D" uid="uid://c45aqhirapvlr" path="res://assets/steam_engine-Sheet.png" id="4_steam"]
+[ext_resource type="Script" uid="uid://cult6rms4020q" path="res://scripts/building_visuals.gd" id="1_visuals"]
+[ext_resource type="Texture2D" uid="uid://dtvvvd5jong4f" path="res://assets/coal_plant-sheet.png" id="2_coal"]
+[ext_resource type="Texture2D" uid="uid://b0nwb0wwuach0" path="res://assets/oxigen_factory-sheet.png" id="3_oxygen"]
+[ext_resource type="Texture2D" uid="uid://c45aqhirapvlr" path="res://assets/steam_engine-sheet.png" id="4_steam"]
 
 [resource]
 script = ExtResource("1_visuals")

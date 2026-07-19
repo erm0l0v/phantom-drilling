@@ -3,8 +3,19 @@ extends Node
 signal grid_changed
 signal size_changed
 
-const ORIGIN := Vector2(224, 32)
+# Emitted (with the row delta, always +1) whenever expand_down() re-keys
+# existing cells to compensate for ORIGIN moving - the currently falling
+# piece isn't tracked by GridManager, so it listens for this to shift its
+# own anchor_cell by the same amount and stay visually put.
+signal origin_row_shifted(delta: int)
+
+const DEFAULT_ORIGIN := Vector2(224, 32)
 const CELL_SIZE := 32
+
+# Mutable (not const): expand_down() moves this up by one tile per expansion
+# so the field grows by extending its top boundary rather than its bottom -
+# see expand_down() below. Reset to DEFAULT_ORIGIN on every new game.
+var ORIGIN := DEFAULT_ORIGIN
 
 # Mutable (not const) because the field size is meant to be resizable during
 # play in a future update; for now it's just seeded once from
@@ -18,10 +29,6 @@ const NEIGHBOR_DIRS: Array[Vector2i] = [
 ]
 
 const BROKEN_VISUALS_PATH := "res://resources/broken_visuals.tres"
-
-# How long shifted sprites take to glide to their new position when the
-# field expands, instead of snapping there instantly.
-const EXPANSION_SHIFT_DURATION := 0.2
 
 var _building_types: Dictionary = {} # Vector2i(col,row) -> BuildingData.BuildingType
 var _cell_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D
@@ -62,21 +69,27 @@ func get_building_types() -> Dictionary:
 
 
 func configure_size(width: int, height: int) -> void:
+	ORIGIN = DEFAULT_ORIGIN
 	COLS = width
 	ROWS = height
 	size_changed.emit()
 
 
-# Adds a new row of headroom by growing the field by 1 row and shifting every
-# already-placed building down by 1 to make room - the field gets one tile
-# deeper while everything sinks further into the ground.
+# Adds a new row of headroom by growing the field by 1 row. The bottom of
+# the field (funnel) stays exactly where it is; instead ORIGIN moves up by
+# one tile and every existing cell's row index is bumped by 1 to match, so
+# their world position - and the currently falling piece's, once it
+# compensates via origin_row_shifted - is completely unchanged. Only the top
+# boundary (tunnel) actually moves, extending upward.
 func expand_down() -> void:
 	ROWS += 1
+	ORIGIN.y -= CELL_SIZE
 	_building_types = _shift_keys_down(_building_types)
-	_cell_sprites = _shift_sprites_down(_cell_sprites)
+	_cell_sprites = _shift_keys_down(_cell_sprites)
 	_broken_cells = _shift_keys_down(_broken_cells)
-	_broken_sprites = _shift_sprites_down(_broken_sprites)
+	_broken_sprites = _shift_keys_down(_broken_sprites)
 
+	origin_row_shifted.emit(1)
 	size_changed.emit()
 	grid_changed.emit()
 
@@ -85,17 +98,6 @@ func _shift_keys_down(dict: Dictionary) -> Dictionary:
 	var shifted: Dictionary = {}
 	for cell in dict:
 		shifted[cell + Vector2i(0, 1)] = dict[cell]
-	return shifted
-
-
-func _shift_sprites_down(dict: Dictionary) -> Dictionary:
-	var shifted: Dictionary = {}
-	for cell in dict:
-		var new_cell: Vector2i = cell + Vector2i(0, 1)
-		var sprite: Sprite2D = dict[cell]
-		var tween := create_tween()
-		tween.tween_property(sprite, "position", cell_to_world(new_cell), EXPANSION_SHIFT_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		shifted[new_cell] = sprite
 	return shifted
 
 
