@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://deva1j5xyl56c"
-path="res://.godot/imported/steam_engine.png-2fe236b9bfc1f706747b01bb4318f50b.ctex"
+uid="uid://c45aqhirapvlr"
+path="res://.godot/imported/steam_engine-Sheet.png-5a30f97cd895201e1ffce63827120a87.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/steam_engine.png"
-dest_files=["res://.godot/imported/steam_engine.png-2fe236b9bfc1f706747b01bb4318f50b.ctex"]
+source_file="res://assets/steam_engine-Sheet.png"
+dest_files=["res://.godot/imported/steam_engine-Sheet.png-5a30f97cd895201e1ffce63827120a87.ctex"]
 
 [params]
 

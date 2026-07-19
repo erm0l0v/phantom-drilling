@@ -61,12 +61,8 @@ func stamp(cells: Array[Vector2i], building_type: int) -> void:
 
 func _update_cell_sprite(cell: Vector2i) -> void:
 	var building_type: int = _building_types[cell]
-	var mask := _connectivity_mask(cell, building_type)
-	var diagonal_filled := true
-	if TetrominoData.DIAGONAL_OFFSET.has(mask):
-		var diagonal_cell: Vector2i = cell + TetrominoData.DIAGONAL_OFFSET[mask]
-		diagonal_filled = _building_types.get(diagonal_cell, -1) == building_type
-	var tile_index: int = TetrominoData.tile_for_mask(mask, diagonal_filled)
+	var pattern := TetrominoData.neighbor_pattern(cell, func(p): return _building_types.get(p, -1) == building_type)
+	var tile_index: int = TetrominoData.tile_for_pattern(pattern)
 	var sprite: Sprite2D = _cell_sprites.get(cell)
 	if sprite == null:
 		sprite = Sprite2D.new()
@@ -75,19 +71,6 @@ func _update_cell_sprite(cell: Vector2i) -> void:
 		_render_container.add_child(sprite)
 		_cell_sprites[cell] = sprite
 	sprite.texture = _atlas_for(building_type, tile_index)
-
-
-func _connectivity_mask(cell: Vector2i, building_type: int) -> int:
-	var mask := 0
-	if _building_types.get(cell + Vector2i(0, -1), -1) == building_type:
-		mask |= 1
-	if _building_types.get(cell + Vector2i(0, 1), -1) == building_type:
-		mask |= 2
-	if _building_types.get(cell + Vector2i(-1, 0), -1) == building_type:
-		mask |= 4
-	if _building_types.get(cell + Vector2i(1, 0), -1) == building_type:
-		mask |= 8
-	return mask
 
 
 func _atlas_for(building_type: int, tile_index: int) -> AtlasTexture:

@@ -51,72 +51,235 @@ const SHAPES := {
 	],
 }
 
-# Bitmask of which sides of a cell touch another occupied cell of the same
-# piece (UP=1, DOWN=2, LEFT=4, RIGHT=8) -> 1-based tile index into the
-# building tile sheets (24x1 sheets of 32x32 tiles, index n at column n-1).
-# Picking the tile this way means connected cells render seamlessly, with no
-# border on the shared edge. Derived from tmp/with_numbers.png.
+# Key: 3x3 pattern of same-type neighbor occupancy around a cell, as
+# [row][col] where row 0 = above, row 2 = below, col 0 = left, col 2 = right
+# (row 1 / col 1 is the cell itself and is always 0):
+#   [UL, U, UR]
+#   [ L, 0,  R]
+#   [DL, D, DR]
+# 1 = that neighbor is the same building type, 0 = not (or not checked).
+# A diagonal (UL/UR/DL/DR) is only ever non-zero when the two orthogonal
+# sides forming that corner are both set and the opposite two are not (e.g.
+# UL is only ever checked when U and L are set and D and R aren't) - that's
+# what picks the "smooth" vs "notched" corner tile variant. See
+# neighbor_pattern() below for how a pattern is built from the world.
+# Value: 1-based tile index into the building tile sheets. Add/edit entries
+# here directly to reassign tile numbers.
 const CONNECTIVITY_TILE := {
-	0: 1,  # isolated
-	1: 6,  # up
-	2: 5,  # down
-	3: 7,  # up+down
-	4: 4,  # left
-	5: 18,  # up+left
-	6: 12,  # down+left
-	7: 15,  # up+down+left
-	8: 2,  # right
-	9: 16,  # up+right
-	10: 10,  # down+right
-	11: 13,  # up+down+right
-	12: 3,  # left+right
-	13: 17,  # up+left+right
-	14: 11,  # down+left+right
-	15: 14,  # up+down+left+right
+	[
+		[0, 0, 0],
+	 	[0, 0, 0],
+	 	[0, 0, 0]]: 1,
+	[
+		[0, 0, 0],
+	 	[0, 0, 1],
+	 	[0, 0, 0]]: 2,
+	[
+		[0, 0, 0],
+	 	[1, 0, 1],
+	 	[0, 0, 0]]: 3,
+	[
+		[0, 0, 0],
+	 	[1, 0, 0],
+	 	[0, 0, 0]]: 4,
+	[
+		[0, 0, 0],
+	 	[0, 0, 0],
+	 	[0, 1, 0]]: 5,
+	[
+		[0, 1, 0],
+	 	[0, 0, 0],
+	 	[0, 0, 0]]: 6,
+	[
+		[0, 1, 0],
+	 	[0, 0, 0],
+	 	[0, 1, 0]]: 7,
+	[
+		[0, 0, 0],
+	 	[0, 0, 1],
+	 	[0, 1, 0]]: 8,
+	[
+		[0, 1, 0],
+	 	[1, 0, 0],
+	 	[0, 0, 0]]: 9,
+	[
+		[0, 0, 0],
+	 	[0, 0, 1],
+	 	[0, 1, 1]]: 10,
+	[
+		[0, 0, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 1]]: 11,
+	[
+		[0, 0, 0],
+	 	[1, 0, 0],
+	 	[1, 1, 0]]: 12,
+	[
+		[0, 1, 1],
+	 	[0, 0, 1],
+	 	[0, 1, 1]]: 13,
+	[
+		[1, 1, 1],
+	 	[1, 0, 1],
+	 	[1, 1, 1]]: 14,
+	[
+		[1, 1, 0],
+	 	[1, 0, 0],
+	 	[1, 1, 0]]: 15,
+	[
+		[0, 1, 1],
+	 	[0, 0, 1],
+	 	[0, 0, 0]]: 16,
+	[
+		[1, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 0, 0]]: 17,
+	[
+		[1, 1, 0],
+	 	[1, 0, 0],
+	 	[0, 0, 0]]: 18,
+	[
+		[0, 0, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 0]]: 19,
+	[
+		[0, 1, 0],
+	 	[0, 0, 1],
+	 	[0, 1, 0]]: 20,
+	[
+		[0, 1, 0],
+	 	[1, 0, 0],
+	 	[0, 1, 0]]: 21,
+	[
+		[0, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 0, 0]]: 22,
+	[
+		[0, 0, 0],
+	 	[1, 0, 0],
+	 	[0, 1, 0]]: 23,
+	[
+		[0, 1, 0],
+	 	[0, 0, 1],
+	 	[0, 0, 0]]: 24,
+	[
+		[0, 1, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 1]]: 25,
+	[
+		[0, 0, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 1]]: 26,
+	[
+		[0, 1, 0],
+	 	[1, 0, 0],
+	 	[1, 1, 0]]: 27,
+	[
+		[0, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 1, 1]]: 28,
+	[
+		[1, 1, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 0]]: 29,
+	[
+		[0, 1, 0],
+	 	[0, 0, 1],
+	 	[0, 1, 1]]: 30,
+	[
+		[0, 0, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 0]]: 31,
+	[
+		[0, 1, 1],
+	 	[0, 0, 1],
+	 	[0, 1, 0]]: 32,
+	[
+		[1, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 0, 0]]: 33,
+	[
+		[1, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 1, 0]]: 34,
+	[
+		[0, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 0, 0]]: 35,
+	[
+		[1, 1, 0],
+	 	[1, 0, 0],
+	 	[0, 1, 0]]: 36,
+	[
+		[0, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 0]]: 37,
+	[
+		[1, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 0]]: 38,
+	[
+		[0, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 1, 0]]: 39,
+	[
+		[0, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 1]]: 40,
+	[
+		[0, 1, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 0]]: 41,
+	[
+		[1, 1, 0],
+	 	[1, 0, 1],
+	 	[0, 1, 1]]: 42,
+	[
+		[0, 1, 1],
+	 	[1, 0, 1],
+	 	[1, 1, 0]]: 43,
+	[
+		[1, 1, 0],
+	 	[1, 0, 1],
+	 	[1, 1, 1]]: 44,
+	[
+		[0, 1, 1],
+	 	[1, 0, 1],
+	 	[1, 1, 1]]: 45,
+	[
+		[1, 1, 1],
+	 	[1, 0, 1],
+	 	[1, 1, 0]]: 46,
+	[
+		[1, 1, 1],
+	 	[1, 0, 1],
+	 	[0, 1, 1]]: 47,
 }
 
-# The four "two adjacent sides" corner masks each have a second tile variant
-# depending on whether the diagonal cell in the corner they form is also
-# occupied by the same type: filled uses the base CONNECTIVITY_TILE entry
-# (smooth inner corner), empty uses this variant (notched corner).
-const DIAGONAL_TILE_VARIANT := {
-	5: 9,  # up+left, diagonal empty
-	6: 23,  # down+left, diagonal empty
-	9: 24,  # up+right, diagonal empty
-	10: 8,  # down+right, diagonal empty
-}
 
-# Which diagonal offset to check for each mask in DIAGONAL_TILE_VARIANT.
-const DIAGONAL_OFFSET := {
-	5: Vector2i(-1, -1),  # up+left
-	6: Vector2i(-1, 1),  # down+left
-	9: Vector2i(1, -1),  # up+right
-	10: Vector2i(1, 1),  # down+right
-}
-
-
-static func connectivity_mask(offset: Vector2i, occupied: Array[Vector2i]) -> int:
-	var mask := 0
-	if occupied.has(offset + Vector2i(0, -1)):
-		mask |= 1
-	if occupied.has(offset + Vector2i(0, 1)):
-		mask |= 2
-	if occupied.has(offset + Vector2i(-1, 0)):
-		mask |= 4
-	if occupied.has(offset + Vector2i(1, 0)):
-		mask |= 8
-	return mask
+# Builds the 3x3 pattern for `offset`, using is_same(neighbor_offset) to test
+# whether a given neighbor position counts as "same type". Works for both an
+# in-hand piece (is_same = offset is one of the piece's own cells) and the
+# placed grid (is_same = that grid cell has the same building type).
+static func neighbor_pattern(offset: Vector2i, is_same: Callable) -> Array:
+	var u = int(is_same.call(offset + Vector2i(0, -1)))
+	var d = int(is_same.call(offset + Vector2i(0, 1)))
+	var l = int(is_same.call(offset + Vector2i(-1, 0)))
+	var r = int(is_same.call(offset + Vector2i(1, 0)))
+	var ul := int(is_same.call(offset + Vector2i(-1, -1))) * int(min(u, l))
+	var ur := int(is_same.call(offset + Vector2i(1, -1))) * int(min(u, r))
+	var dl := int(is_same.call(offset + Vector2i(-1, 1))) * int(min(d, l))
+	var dr := int(is_same.call(offset + Vector2i(1, 1))) * int(min(d, r))
+	return [
+		[ul, u, ur],
+		[l, 0, r],
+		[dl, d, dr],
+	]
 
 
-static func tile_for_mask(mask: int, diagonal_filled: bool) -> int:
-	if not diagonal_filled and DIAGONAL_TILE_VARIANT.has(mask):
-		return DIAGONAL_TILE_VARIANT[mask]
-	return CONNECTIVITY_TILE[mask]
+static func tile_for_pattern(pattern: Array) -> int:
+	return CONNECTIVITY_TILE.get(pattern, 1)
 
 
 static func tile_for(offset: Vector2i, occupied: Array[Vector2i]) -> int:
-	var mask := connectivity_mask(offset, occupied)
-	var diagonal_filled := true
-	if DIAGONAL_OFFSET.has(mask):
-		diagonal_filled = occupied.has(offset + DIAGONAL_OFFSET[mask])
-	return tile_for_mask(mask, diagonal_filled)
+	return tile_for_pattern(neighbor_pattern(offset, func(p): return occupied.has(p)))
