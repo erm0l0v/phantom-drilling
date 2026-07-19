@@ -27,9 +27,16 @@ const FUNNEL_HEIGHT_TILES := 2
 const FUNNEL_ROW_1: Array[int] = [5, 7, 9, 14, 13, 10, 8, 6]
 const FUNNEL_ROW_2: Array[int] = [1, 1, 1, 11, 12, 15, 1, 1]
 
+const LANDING_HIGHLIGHT_COLOR := Color(0.65, 0.65, 0.65, 1.0)
+
 var _visuals: FieldVisuals = load(VISUALS_PATH)
 var _atlas_cache: Dictionary = {}
 var _sprites: Array[Sprite2D] = []
+
+# Only the "игровое поле" (TILE_FIELD) cells - the ones a piece can actually
+# land on - tracked separately so the landing preview can modulate them.
+var _field_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D
+var _highlighted_cells: Array[Vector2i] = []
 
 
 func _ready() -> void:
@@ -41,6 +48,8 @@ func rebuild() -> void:
 	for sprite in _sprites:
 		sprite.queue_free()
 	_sprites.clear()
+	_field_sprites.clear()
+	_highlighted_cells.clear()
 
 	var cols := GridManager.COLS
 	var rows := GridManager.ROWS
@@ -86,7 +95,9 @@ func _paint_field(origin: Vector2, cols: int, rows: int) -> void:
 		_place(left_tile, Vector2(origin.x - TILE_SIZE, y))
 		_place(right_tile, Vector2(origin.x + cols * TILE_SIZE, y))
 		for col in range(cols):
-			_place(TILE_FIELD, Vector2(origin.x + col * TILE_SIZE, y))
+			var cell := Vector2i(col, row)
+			var sprite := _place(TILE_FIELD, Vector2(origin.x + col * TILE_SIZE, y))
+			_field_sprites[cell] = sprite
 
 
 func _paint_funnel(origin: Vector2, rows: int) -> void:
@@ -99,13 +110,30 @@ func _paint_funnel(origin: Vector2, rows: int) -> void:
 			_place(tiles[col], Vector2(x, y))
 
 
-func _place(tile_index: int, pos: Vector2) -> void:
+func _place(tile_index: int, pos: Vector2) -> Sprite2D:
 	var sprite := Sprite2D.new()
 	sprite.centered = false
 	sprite.position = pos
 	sprite.texture = _atlas_for(tile_index)
 	add_child(sprite)
 	_sprites.append(sprite)
+	return sprite
+
+
+# Darkens exactly the given field cells (clearing any previous highlight
+# first) to preview where the currently falling piece will land.
+func highlight_landing(cells: Array[Vector2i]) -> void:
+	for cell in _highlighted_cells:
+		var sprite: Sprite2D = _field_sprites.get(cell)
+		if sprite != null:
+			sprite.modulate = Color.WHITE
+	_highlighted_cells.clear()
+
+	for cell in cells:
+		var sprite: Sprite2D = _field_sprites.get(cell)
+		if sprite != null:
+			sprite.modulate = LANDING_HIGHLIGHT_COLOR
+			_highlighted_cells.append(cell)
 
 
 func _atlas_for(tile_index: int) -> AtlasTexture:

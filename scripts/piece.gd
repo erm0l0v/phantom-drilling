@@ -2,6 +2,7 @@ extends Node2D
 class_name Piece
 
 signal placed(piece: Piece)
+signal landing_preview_changed(cells: Array[Vector2i])
 
 var shape_type: TetrominoData.ShapeType
 var building_type: BuildingData.BuildingType
@@ -34,6 +35,7 @@ func _on_origin_row_shifted(delta: int) -> void:
 		return
 	anchor_cell.y += delta
 	_update_position()
+	_emit_landing_preview()
 
 
 # Shapes live inside a 4x4 box; spawn horizontally centered and fully above
@@ -96,6 +98,7 @@ func _try_move(offset: Vector2i) -> void:
 	if _fits(new_anchor, rotation_state):
 		anchor_cell = new_anchor
 		_update_position()
+		_emit_landing_preview()
 
 
 func _try_rotate() -> void:
@@ -104,6 +107,7 @@ func _try_rotate() -> void:
 		rotation_state = new_rotation
 		_rebuild_cells()
 		_update_position()
+		_emit_landing_preview()
 
 
 func _try_fall() -> void:
@@ -111,8 +115,26 @@ func _try_fall() -> void:
 	if _fits(new_anchor, rotation_state):
 		anchor_cell = new_anchor
 		_update_position()
+		_emit_landing_preview()
 	else:
 		_lock()
+
+
+func _emit_landing_preview() -> void:
+	landing_preview_changed.emit(get_landing_cells())
+
+
+# Simulates falling straight down from the current position/rotation until
+# blocked, without actually moving the piece - used to preview where it will
+# land.
+func get_landing_cells() -> Array[Vector2i]:
+	var landing_anchor := anchor_cell
+	while _fits(landing_anchor + Vector2i(0, 1), rotation_state):
+		landing_anchor += Vector2i(0, 1)
+	var cells: Array[Vector2i] = []
+	for offset in TetrominoData.SHAPES[shape_type][rotation_state]:
+		cells.append(landing_anchor + offset)
+	return cells
 
 
 # Column must stay in bounds and cells can't overlap the stack; no lower

@@ -10,6 +10,12 @@ extends Node
 # Energy production is stock-capped rather than deficit-based: if there isn't
 # enough oxygen/coal on hand to cover what the steam engines could produce,
 # they simply produce less energy instead of driving oxygen/coal negative.
+#
+# The group efficiency bonus only boosts how much energy comes OUT of steam
+# engines - it doesn't make them thirstier. Oxygen/coal consumption is
+# always based on the unboosted ("base") production, then the successfully
+# consumed amount is scaled up by the group's average boost ratio to get the
+# actual energy yield.
 
 signal resources_changed(totals: Dictionary, rates: Dictionary)
 
@@ -43,9 +49,15 @@ var balance: GameBalance = load(BALANCE_PATH)
 var totals: Dictionary = {}
 var rates: Dictionary = {}
 
-# Raw production per resource from placed building groups, before energy's
-# oxygen/coal cost is applied. Recomputed only when the grid changes.
+# Raw production per resource from placed building groups, including the
+# group efficiency bonus - this is what actually ends up in the energy
+# stockpile (subject to the stock cap below). Recomputed only when the grid
+# changes.
 var _gross_rates: Dictionary = {}
+
+# Same steam-engine production as _gross_rates[ENERGY], but WITHOUT the group
+# bonus applied - this is what oxygen/coal consumption is based on.
+var _energy_base_rate: float = 0.0
 
 
 func _ready() -> void:
@@ -65,6 +77,7 @@ func reset() -> void:
 		ResourceType.ENERGY: 0.0,
 	}
 	_gross_rates = rates.duplicate()
+	_energy_base_rate = 0.0
 	_recompute_gross_rates()
 	resources_changed.emit(totals, rates)
 
@@ -78,22 +91,32 @@ func _process(delta: float) -> void:
 	totals[ResourceType.OXYGEN] += _gross_rates[ResourceType.OXYGEN] * delta
 	totals[ResourceType.COAL] += _gross_rates[ResourceType.COAL] * delta
 
-	var desired_energy: float = _gross_rates[ResourceType.ENERGY] * delta
-	var actual_energy := desired_energy
+	# Stock-cap against the BASE (unboosted) energy production - that's what
+	# actually draws down oxygen/coal.
+	var desired_base_energy: float = _energy_base_rate * delta
+	var actual_base_energy := desired_base_energy
 	if balance.energy_oxygen_cost > 0.0:
-		actual_energy = min(actual_energy, totals[ResourceType.OXYGEN] / balance.energy_oxygen_cost)
+		actual_base_energy = min(actual_base_energy, totals[ResourceType.OXYGEN] / balance.energy_oxygen_cost)
 	if balance.energy_coal_cost > 0.0:
-		actual_energy = min(actual_energy, totals[ResourceType.COAL] / balance.energy_coal_cost)
-	actual_energy = max(0.0, actual_energy)
+		actual_base_energy = min(actual_base_energy, totals[ResourceType.COAL] / balance.energy_coal_cost)
+	actual_base_energy = max(0.0, actual_base_energy)
 
-	totals[ResourceType.OXYGEN] -= actual_energy * balance.energy_oxygen_cost
-	totals[ResourceType.COAL] -= actual_energy * balance.energy_coal_cost
+	# Scale whatever base production actually succeeded by the group bonus's
+	# average boost ratio to get the real energy yield.
+	var boost_ratio := 1.0
+	if _energy_base_rate > 0.0:
+		boost_ratio = _gross_rates[ResourceType.ENERGY] / _energy_base_rate
+	var actual_energy: float = actual_base_energy * boost_ratio
+
+	totals[ResourceType.OXYGEN] -= actual_base_energy * balance.energy_oxygen_cost
+	totals[ResourceType.COAL] -= actual_base_energy * balance.energy_coal_cost
 	totals[ResourceType.ENERGY] += actual_energy
 
 	var actual_energy_rate := actual_energy / delta
+	var actual_base_energy_rate := actual_base_energy / delta
 	rates[ResourceType.ENERGY] = actual_energy_rate
-	rates[ResourceType.OXYGEN] = _gross_rates[ResourceType.OXYGEN] - actual_energy_rate * balance.energy_oxygen_cost
-	rates[ResourceType.COAL] = _gross_rates[ResourceType.COAL] - actual_energy_rate * balance.energy_coal_cost
+	rates[ResourceType.OXYGEN] = _gross_rates[ResourceType.OXYGEN] - actual_base_energy_rate * balance.energy_oxygen_cost
+	rates[ResourceType.COAL] = _gross_rates[ResourceType.COAL] - actual_base_energy_rate * balance.energy_coal_cost
 
 	resources_changed.emit(totals, rates)
 
@@ -105,6 +128,7 @@ func _on_grid_changed() -> void:
 func _recompute_gross_rates() -> void:
 	for resource in _gross_rates:
 		_gross_rates[resource] = 0.0
+	_energy_base_rate = 0.0
 
 	var building_types := GridManager.get_building_types()
 	var visited: Dictionary = {}
@@ -115,5 +139,9 @@ func _recompute_gross_rates() -> void:
 		for member in group:
 			visited[member] = true
 		var multiplier := balance.multiplier_for_group_size(group.size())
-		var resource: ResourceType = RESOURCE_FOR_BUILDING[building_types[cell]]
-		_gross_rates[resource] += group.size() * balance.base_rate_per_tile * multiplier
+		var building_type: int = building_types[cell]
+		var resource: ResourceType = RESOURCE_FOR_BUILDING[building_type]
+		var base_amount: float = group.size() * balance.base_rate_per_tile
+		_gross_rates[resource] += base_amount * multiplier
+		if building_type == BuildingData.BuildingType.STEAM_ENGINE:
+			_energy_base_rate += base_amount
