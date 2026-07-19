@@ -10,9 +10,16 @@
 [ext_resource type="Script" uid="uid://0a1ejtca3xik" path="res://scripts/ghost_field.gd" id="9_ghost_field"]
 [ext_resource type="Script" uid="uid://cb3hwj8d1rc3l" path="res://scripts/ghost_hud.gd" id="10_ghost_hud"]
 [ext_resource type="Script" uid="uid://dn0q41h5n25gj" path="res://scripts/next_piece_hud.gd" id="11_next_piece_hud"]
+[ext_resource type="AudioStream" uid="uid://c1xntxa0gdjut" path="res://music/sound_track.mp3" id="12_music"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1845145944]
+stream = ExtResource("12_music")
+volume_db = -30.0
+autoplay = true
+parameters/looping = true
 
 [node name="FieldBackground" type="Node2D" parent="." unique_id=1268927517]
 script = ExtResource("6_field_background")
