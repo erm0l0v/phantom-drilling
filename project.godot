@@ -18,6 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 GridManager="*res://scripts/grid_manager.gd"
+ResourceManager="*res://scripts/resource_manager.gd"
+GameManager="*res://scripts/game_manager.gd"
 
 [display]
 

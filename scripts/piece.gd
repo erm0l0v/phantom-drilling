@@ -48,7 +48,7 @@ func _rebuild_cells() -> void:
 func _atlas_for(tile_index: int) -> AtlasTexture:
 	if not _tile_atlas_cache.has(tile_index):
 		var atlas := AtlasTexture.new()
-		atlas.atlas = BuildingData.TEXTURES[building_type]
+		atlas.atlas = BuildingData.texture_for(building_type)
 		var cell_size := GridManager.CELL_SIZE
 		atlas.region = Rect2((tile_index - 1) * cell_size, 0, cell_size, cell_size)
 		_tile_atlas_cache[tile_index] = atlas

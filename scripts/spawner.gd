@@ -25,3 +25,10 @@ func spawn_next() -> void:
 
 func _on_piece_placed(_piece: Piece) -> void:
 	spawn_next()
+
+
+func reset() -> void:
+	current_piece = null
+	for child in pieces_container.get_children():
+		child.queue_free()
+	spawn_next()

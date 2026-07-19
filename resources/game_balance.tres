@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="GameBalance" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/game_balance.gd" id="1_balance"]
+
+[resource]
+script = ExtResource("1_balance")
+base_rate_per_tile = 1.0
+tier2_group_size = 8
+tier2_multiplier = 2.0
+tier3_group_size = 10
+tier3_multiplier = 3.0
+tier4_group_size = 12
+tier4_multiplier = 4.0
+starting_stock = 10.0
+energy_oxygen_cost = 1.0
+energy_coal_cost = 1.0
+starting_oxygen_tiles = 2
+starting_coal_tiles = 1
+starting_energy_tiles = 1

@@ -1,5 +1,7 @@
 extends Node
 
+signal grid_changed
+
 const ORIGIN := Vector2(224, 32)
 const CELL_SIZE := 32
 const COLS := 6
@@ -33,6 +35,18 @@ func is_in_bounds(cell: Vector2i) -> bool:
 	return cell.x >= 0 and cell.x < COLS and cell.y >= 0 and cell.y < ROWS
 
 
+func get_building_types() -> Dictionary:
+	return _building_types.duplicate()
+
+
+func clear() -> void:
+	for sprite in _cell_sprites.values():
+		sprite.queue_free()
+	_cell_sprites.clear()
+	_building_types.clear()
+	grid_changed.emit()
+
+
 func can_stamp(cells: Array[Vector2i]) -> bool:
 	for cell in cells:
 		if not is_in_bounds(cell):
@@ -57,6 +71,8 @@ func stamp(cells: Array[Vector2i], building_type: int) -> void:
 			var neighbor := cell + dir
 			if _building_types.has(neighbor):
 				_update_cell_sprite(neighbor)
+	if not touched.is_empty():
+		grid_changed.emit()
 
 
 func _update_cell_sprite(cell: Vector2i) -> void:
@@ -77,7 +93,7 @@ func _atlas_for(building_type: int, tile_index: int) -> AtlasTexture:
 	var key := building_type * 100 + tile_index
 	if not _atlas_cache.has(key):
 		var atlas := AtlasTexture.new()
-		atlas.atlas = BuildingData.TEXTURES[building_type]
+		atlas.atlas = BuildingData.texture_for(building_type)
 		atlas.region = Rect2((tile_index - 1) * CELL_SIZE, 0, CELL_SIZE, CELL_SIZE)
 		_atlas_cache[key] = atlas
 	return _atlas_cache[key]
