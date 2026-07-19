@@ -11,9 +11,12 @@ extends Node2D
 # ghost gets repair_broken()'d back into a ghost itself) - a ghost cell
 # should never wink out of existence.
 #
-# Each time a new piece spawns, every ghost looks at its 4 orthogonal
-# neighbors: a building there gets broken (stops producing); failing that, a
-# broken tile there turns into a new ghost (the infestation spreads);
+# Each time a new piece spawns, every ghost that has already survived one
+# full spawn cycle (freshly discovered ghosts get one grace turn and don't
+# act the moment they appear) looks at its 4 orthogonal neighbors: a
+# building there gets broken (stops producing); failing that, a broken tile
+# there turns into a new ghost - but only if that cell would actually
+# qualify as a hole once emptied (something solid still above it) -
 # otherwise the ghost does nothing that turn.
 
 signal ghost_count_changed(count: int)
@@ -27,6 +30,7 @@ const ORTHOGONAL_DIRS: Array[Vector2i] = [
 var _visuals: GhostVisuals = load(VISUALS_PATH)
 var _atlas_cache: Dictionary = {}
 var _ghost_sprites: Dictionary = {} # Vector2i(col,row) -> Sprite2D, persists once created
+var _ghost_ready: Dictionary = {} # Vector2i(col,row) -> bool, false until it survives a full cycle
 
 
 func _ready() -> void:
@@ -41,6 +45,7 @@ func _on_game_restarted() -> void:
 	for sprite in _ghost_sprites.values():
 		sprite.queue_free()
 	_ghost_sprites.clear()
+	_ghost_ready.clear()
 	ghost_count_changed.emit(0)
 
 
@@ -49,10 +54,16 @@ func _on_game_restarted() -> void:
 # everything visually still (see grid_manager.gd). Ghosts aren't tracked by
 # GridManager, so they have to do the same compensation themselves.
 func _on_origin_row_shifted(delta: int) -> void:
-	var shifted: Dictionary = {}
+	var shifted_sprites: Dictionary = {}
 	for cell in _ghost_sprites:
-		shifted[cell + Vector2i(0, delta)] = _ghost_sprites[cell]
-	_ghost_sprites = shifted
+		shifted_sprites[cell + Vector2i(0, delta)] = _ghost_sprites[cell]
+	_ghost_sprites = shifted_sprites
+
+	var shifted_ready: Dictionary = {}
+	for cell in _ghost_ready:
+		shifted_ready[cell + Vector2i(0, delta)] = _ghost_ready[cell]
+	_ghost_ready = shifted_ready
+
 	_redraw_all()
 
 
@@ -61,6 +72,7 @@ func _discover_and_refresh() -> void:
 	for cell in _compute_hole_cells():
 		if not _ghost_sprites.has(cell):
 			_ghost_sprites[cell] = _make_ghost_sprite(cell)
+			_ghost_ready[cell] = false
 			discovered = true
 	_redraw_all()
 	if discovered:
@@ -95,6 +107,16 @@ func _compute_hole_cells() -> Array[Vector2i]:
 	return result
 
 
+# Would `cell` still qualify as a hole (something solid above it in its
+# column) if it were emptied right now? Used before turning a broken tile
+# into a ghost, so we don't hand out ghosts to cells nothing actually covers.
+func _is_coverable(cell: Vector2i) -> bool:
+	for row in range(cell.y):
+		if GridManager.is_occupied(Vector2i(cell.x, row)):
+			return true
+	return false
+
+
 func _atlas_for(tile_index: int) -> AtlasTexture:
 	if not _atlas_cache.has(tile_index):
 		var atlas := AtlasTexture.new()
@@ -106,8 +128,13 @@ func _atlas_for(tile_index: int) -> AtlasTexture:
 
 
 func process_turn() -> void:
-	for ghost_cell in _ghost_sprites.keys():
-		_act_on_ghost(ghost_cell)
+	# Snapshot first - acting on one ghost can discover new ones mid-loop
+	# (e.g. repairing a broken tile), and those must not act this same cycle.
+	for cell in _ghost_sprites.keys():
+		if _ghost_ready.get(cell, false):
+			_act_on_ghost(cell)
+	for cell in _ghost_sprites.keys():
+		_ghost_ready[cell] = true
 
 
 func _act_on_ghost(ghost_cell: Vector2i) -> void:
@@ -128,4 +155,5 @@ func _act_on_ghost(ghost_cell: Vector2i) -> void:
 
 	if not broken_neighbors.is_empty():
 		var target: Vector2i = broken_neighbors[randi() % broken_neighbors.size()]
-		GridManager.repair_broken(target)
+		if _is_coverable(target):
+			GridManager.repair_broken(target)
