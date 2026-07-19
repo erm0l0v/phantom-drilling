@@ -29,7 +29,7 @@ jobs:
       - name: Verify LFS files
         shell: bash
         run: |
-        broken=0
+          broken=0
 
           while IFS= read -r file; do
             if grep -q "^version https://git-lfs.github.com/spec/v1" "$file"; then
