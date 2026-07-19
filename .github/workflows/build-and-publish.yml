@@ -14,6 +14,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Godot has to (re)import every asset from scratch on a clean checkout
+      # (.godot/ is gitignored). Doing that import inside the same process
+      # that also exports can race - textures that just got reimported can
+      # get packed before that import is fully settled, which surfaced as
+      # "Failed loading resource" errors for exactly the assets referenced
+      # by custom Resource .tres files (building/field/ghost visuals) and a
+      # hard "configuration errors" failure on the Web preset. Running a
+      # separate import-only pass first avoids the race.
+      - name: Warm up asset import cache
+        run: |
+          mkdir -p /tmp/godot-import
+          curl -L -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${{ env.GODOT_VERSION }}/Godot_v${{ env.GODOT_VERSION }}_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d /tmp/godot-import
+          chmod +x /tmp/godot-import/Godot_v${{ env.GODOT_VERSION }}_linux.x86_64
+          /tmp/godot-import/Godot_v${{ env.GODOT_VERSION }}_linux.x86_64 --headless --editor --quit --path .
+
       - name: Export game
         id: export
         uses: firebelley/godot-export@v8.0.0

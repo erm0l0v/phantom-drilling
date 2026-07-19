@@ -4,12 +4,15 @@ extends Resource
 @export var base_rate_per_tile: float = 1.0
 
 @export_group("Group Efficiency Tiers")
-@export var tier2_group_size: int = 8
-@export var tier2_multiplier: float = 2.0
-@export var tier3_group_size: int = 10
-@export var tier3_multiplier: float = 3.0
-@export var tier4_group_size: int = 12
-@export var tier4_multiplier: float = 4.0
+# Groups smaller than this get no bonus (multiplier 1x). At and above it, the
+# multiplier starts at tier_start_multiplier and climbs by tier_step_multiplier
+# for every extra tier_step_size tiles in the group - uncapped, so a big
+# enough group keeps getting more efficient forever. Default (8/2/3.0/1.0)
+# gives 8->x3, 10->x4, 12->x5, 14->x6, ...
+@export var tier_start_size: int = 8
+@export var tier_step_size: int = 2
+@export var tier_start_multiplier: float = 3.0
+@export var tier_step_multiplier: float = 1.0
 
 @export_group("Resources")
 @export var starting_stock: float = 0.0
@@ -36,10 +39,7 @@ extends Resource
 
 
 func multiplier_for_group_size(size: int) -> float:
-	if size >= tier4_group_size:
-		return tier4_multiplier
-	if size >= tier3_group_size:
-		return tier3_multiplier
-	if size >= tier2_group_size:
-		return tier2_multiplier
-	return 1.0
+	if size < tier_start_size or tier_step_size <= 0:
+		return 1.0
+	var steps: int = int((size - tier_start_size) / float(tier_step_size))
+	return tier_start_multiplier + steps * tier_step_multiplier
