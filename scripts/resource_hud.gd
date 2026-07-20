@@ -19,4 +19,4 @@ func _on_resources_changed(totals: Dictionary, rates: Dictionary) -> void:
 func _format_line(label: String, totals: Dictionary, rates: Dictionary, resource: int) -> String:
 	var total: float = totals[resource]
 	var rate: float = rates[resource]
-	return "%s: %d (+%.1f/s)" % [label, floori(total), rate]
+	return "%s: %d (+%d/s)" % [label, floori(total), roundi(rate)]
