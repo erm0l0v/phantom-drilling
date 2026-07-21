@@ -11,8 +11,9 @@
 [ext_resource type="Script" uid="uid://cb3hwj8d1rc3l" path="res://scripts/ghost_hud.gd" id="10_ghost_hud"]
 [ext_resource type="Script" uid="uid://dn0q41h5n25gj" path="res://scripts/next_piece_hud.gd" id="11_next_piece_hud"]
 [ext_resource type="AudioStream" uid="uid://c1xntxa0gdjut" path="res://music/sound_track.mp3" id="12_music"]
-[ext_resource type="Script" path="res://scripts/pause_ui.gd" id="13_pause_ui"]
-[ext_resource type="Script" path="res://scripts/group_bonus_fx.gd" id="14_group_bonus_fx"]
+[ext_resource type="Script" uid="uid://bdgm1081caws" path="res://scripts/pause_ui.gd" id="13_pause_ui"]
+[ext_resource type="Script" uid="uid://bi1a6k81ul3cf" path="res://scripts/group_bonus_fx.gd" id="14_group_bonus_fx"]
+[ext_resource type="Script" uid="uid://o8pkblvj8xur" path="res://scripts/drill_fx.gd" id="15_drill_fx"]
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -26,6 +27,11 @@ parameters/looping = true
 [node name="FieldBackground" type="Node2D" parent="." unique_id=1268927517]
 script = ExtResource("6_field_background")
 
+[node name="DrillFX" type="Node2D" parent="." unique_id=973510609]
+script = ExtResource("15_drill_fx")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="DrillFX" unique_id=661499720]
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1306811874]
 script = ExtResource("7_camera")
 
@@ -36,10 +42,10 @@ script = ExtResource("9_ghost_field")
 
 [node name="PiecesContainer" type="Node2D" parent="." unique_id=392230890]
 
-[node name="GroupBonusFX" type="Node2D" parent="."]
+[node name="GroupBonusFX" type="Node2D" parent="." unique_id=822408893]
 script = ExtResource("14_group_bonus_fx")
 
-[node name="PopupLayer" type="CanvasLayer" parent="GroupBonusFX"]
+[node name="PopupLayer" type="CanvasLayer" parent="GroupBonusFX" unique_id=238140299]
 
 [node name="Spawner" type="Node" parent="." unique_id=1079665167]
 script = ExtResource("3_spawner")
@@ -163,19 +169,19 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Restart"
 
-[node name="PauseUI" type="CanvasLayer" parent="."]
+[node name="PauseUI" type="CanvasLayer" parent="." unique_id=2105182157]
 script = ExtResource("13_pause_ui")
 
-[node name="Dim" type="ColorRect" parent="PauseUI"]
+[node name="Dim" type="ColorRect" parent="PauseUI" unique_id=1474492730]
 offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0, 0, 0, 0.5)
 
-[node name="PauseLabel" type="Label" parent="PauseUI"]
+[node name="PauseLabel" type="Label" parent="PauseUI" unique_id=869309503]
 offset_left = 200.0
 offset_top = 160.0
 offset_right = 440.0
 offset_bottom = 200.0
 theme_override_font_sizes/font_size = 24
-horizontal_alignment = 1
 text = "Paused"
+horizontal_alignment = 1

@@ -1,7 +1,7 @@
 extends Node2D
 
 # Assembles the playfield surroundings (background, side walls, entry
-# tunnel, exit funnel) out of the 20-tile strip in game_field-Sheet.png
+# tunnel, exit funnel) out of the 21-tile strip in game_fieldt.png
 # (see resources/field_visuals.tres). Rebuilds whenever GridManager's size
 # changes.
 
@@ -9,23 +9,25 @@ const VISUALS_PATH := "res://resources/field_visuals.tres"
 const TILE_SIZE := 32
 const VIEWPORT_SIZE := Vector2(640, 360)
 
-# 1-based tile indices into the sheet's single row of 20 tiles.
+# 1-based tile indices into the sheet's single row of 21 tiles. The tunnel
+# and the field's bottom border reuse the same wall tiles as the rest of the
+# field (this sheet has no separate tiles for those).
 const TILE_BACKGROUND := 1
-const TILE_FIELD := 2
-const TILE_FIELD_LEFT := 3
-const TILE_FIELD_RIGHT := 4
-const TILE_FIELD_LEFT_BOTTOM := 16
-const TILE_FIELD_RIGHT_BOTTOM := 17
-const TILE_TUNNEL := 20
-const TILE_TUNNEL_LEFT := 18
-const TILE_TUNNEL_RIGHT := 19
+const TILE_FIELD := 6
+const TILE_FIELD_LEFT := 5
+const TILE_FIELD_RIGHT := 7
+const TILE_FIELD_LEFT_BOTTOM := 5
+const TILE_FIELD_RIGHT_BOTTOM := 4
+const TILE_TUNNEL := 3
+const TILE_TUNNEL_LEFT := 2
+const TILE_TUNNEL_RIGHT := 4
 
 const FUNNEL_HEIGHT_TILES := 2
 
 # Funnel below the field is field-width + 2 (one extra column overhanging
 # each side); rows are hand-authored art tied to that fixed width.
-const FUNNEL_ROW_1: Array[int] = [5, 7, 9, 14, 13, 10, 8, 6]
-const FUNNEL_ROW_2: Array[int] = [1, 1, 1, 11, 12, 15, 1, 1]
+const FUNNEL_ROW_1: Array[int] = [12, 13, 3, 3, 3, 3, 14, 15]
+const FUNNEL_ROW_2: Array[int] = [1, 16, 17, 18, 19, 20, 21, 1]
 
 const LANDING_HIGHLIGHT_COLOR := Color(0.65, 0.65, 0.65, 1.0)
 
