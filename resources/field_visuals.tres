@@ -1,8 +1,10 @@
 [gd_resource type="Resource" script_class="FieldVisuals" format=3]
 
 [ext_resource type="Script" uid="uid://bb7qf2y1e3l21" path="res://scripts/field_visuals.gd" id="1_visuals"]
-[ext_resource type="Texture2D" uid="uid://dy5hbcdps85no" path="res://assets/game_fieldt.png" id="2_sheet"]
+[ext_resource type="Texture2D" uid="uid://c0ia1edb8eewd" path="res://assets/game_field.png" id="2_sheet"]
+[ext_resource type="Texture2D" uid="uid://5gkncdvp86ja" path="res://assets/bg.png" id="3_bg"]
 
 [resource]
 script = ExtResource("1_visuals")
 tile_sheet = ExtResource("2_sheet")
+background_texture = ExtResource("3_bg")

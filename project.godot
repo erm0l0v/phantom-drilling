@@ -30,6 +30,10 @@ window/size/window_height_override=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[gui]
+
+theme/custom_font="res://font/bitcountsingle-regular.ttf"
+
 [input]
 
 camera_up={

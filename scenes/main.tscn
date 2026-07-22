@@ -14,6 +14,16 @@
 [ext_resource type="Script" uid="uid://bdgm1081caws" path="res://scripts/pause_ui.gd" id="13_pause_ui"]
 [ext_resource type="Script" uid="uid://bi1a6k81ul3cf" path="res://scripts/group_bonus_fx.gd" id="14_group_bonus_fx"]
 [ext_resource type="Script" uid="uid://o8pkblvj8xur" path="res://scripts/drill_fx.gd" id="15_drill_fx"]
+[ext_resource type="Texture2D" uid="uid://cy6kgkclj4vf6" path="res://assets/oxigen_icon.png" id="16_oxygen_icon"]
+[ext_resource type="Texture2D" uid="uid://dma7qgy4pspqx" path="res://assets/coal_icon.png" id="17_coal_icon"]
+[ext_resource type="Texture2D" uid="uid://iwi75lr026tv" path="res://assets/energy_icon.png" id="18_energy_icon"]
+[ext_resource type="Script" path="res://scripts/nine_slice_border.gd" id="19_nine_slice_border"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hud"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
 
 [node name="Main" type="Node2D" unique_id=1613027392]
 script = ExtResource("1_main")
@@ -53,41 +63,77 @@ script = ExtResource("3_spawner")
 [node name="ResourceHUD" type="CanvasLayer" parent="." unique_id=896163892]
 script = ExtResource("4_resource_hud")
 
+[node name="Border" type="Node2D" parent="ResourceHUD"]
+position = Vector2(8, 8)
+script = ExtResource("19_nine_slice_border")
+target_size = Vector2(192, 96)
+
 [node name="Panel" type="PanelContainer" parent="ResourceHUD" unique_id=184069586]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 200.0
-offset_bottom = 84.0
+offset_bottom = 104.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
 
 [node name="VBox" type="VBoxContainer" parent="ResourceHUD/Panel" unique_id=1598761854]
 layout_mode = 2
 
-[node name="OxygenLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=1129592258]
+[node name="OxygenRow" type="HBoxContainer" parent="ResourceHUD/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="OxygenIcon" type="TextureRect" parent="ResourceHUD/Panel/VBox/OxygenRow"]
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("16_oxygen_icon")
+stretch_mode = 3
+
+[node name="OxygenLabel" type="Label" parent="ResourceHUD/Panel/VBox/OxygenRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.55, 0.85, 1, 1)
 theme_override_font_sizes/font_size = 14
-text = "Oxygen: 0 (+0.0/s)"
+text = "0 (+0/s)"
 
-[node name="CoalLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=715144221]
+[node name="CoalRow" type="HBoxContainer" parent="ResourceHUD/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CoalIcon" type="TextureRect" parent="ResourceHUD/Panel/VBox/CoalRow"]
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("17_coal_icon")
+stretch_mode = 3
+
+[node name="CoalLabel" type="Label" parent="ResourceHUD/Panel/VBox/CoalRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.7, 0.65, 1)
 theme_override_font_sizes/font_size = 14
-text = "Coal: 0 (+0.0/s)"
+text = "0 (+0/s)"
 
-[node name="EnergyLabel" type="Label" parent="ResourceHUD/Panel/VBox" unique_id=849945108]
+[node name="EnergyRow" type="HBoxContainer" parent="ResourceHUD/Panel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnergyIcon" type="TextureRect" parent="ResourceHUD/Panel/VBox/EnergyRow"]
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("18_energy_icon")
+stretch_mode = 3
+
+[node name="EnergyLabel" type="Label" parent="ResourceHUD/Panel/VBox/EnergyRow"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 theme_override_font_sizes/font_size = 14
-text = "Energy: 0 (+0.0/s)"
+text = "0 (+0/s)"
 
 [node name="GhostHUD" type="CanvasLayer" parent="." unique_id=1944779239]
 script = ExtResource("10_ghost_hud")
 
 [node name="GhostLabel" type="Label" parent="GhostHUD" unique_id=1692206229]
 offset_left = 8.0
-offset_top = 90.0
+offset_top = 112.0
 offset_right = 200.0
-offset_bottom = 110.0
+offset_bottom = 132.0
 theme_override_colors/font_color = Color(0.75, 0.6, 0.85, 1)
 theme_override_font_sizes/font_size = 14
 text = "Ghosts: 0"
@@ -95,11 +141,17 @@ text = "Ghosts: 0"
 [node name="NextPieceHUD" type="CanvasLayer" parent="." unique_id=501066193]
 script = ExtResource("11_next_piece_hud")
 
+[node name="Border" type="Node2D" parent="NextPieceHUD"]
+position = Vector2(520, 8)
+script = ExtResource("19_nine_slice_border")
+target_size = Vector2(112, 128)
+
 [node name="Panel" type="PanelContainer" parent="NextPieceHUD" unique_id=742942445]
 offset_left = 520.0
 offset_top = 8.0
 offset_right = 632.0
-offset_bottom = 110.0
+offset_bottom = 136.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
 
 [node name="VBox" type="VBoxContainer" parent="NextPieceHUD/Panel" unique_id=710458246]
 layout_mode = 2
@@ -111,7 +163,7 @@ text = "Next:"
 horizontal_alignment = 1
 
 [node name="PreviewContainer" type="Node2D" parent="NextPieceHUD" unique_id=2107214207]
-position = Vector2(544, 34)
+position = Vector2(544, 44)
 
 [node name="DepthHUD" type="CanvasLayer" parent="." unique_id=31404099]
 script = ExtResource("8_depth_hud")
@@ -145,11 +197,17 @@ offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0, 0, 0, 0.6)
 
+[node name="Border" type="Node2D" parent="GameOverUI"]
+position = Vector2(200, 116)
+script = ExtResource("19_nine_slice_border")
+target_size = Vector2(240, 128)
+
 [node name="Panel" type="PanelContainer" parent="GameOverUI" unique_id=503094365]
-offset_left = 190.0
-offset_top = 110.0
-offset_right = 450.0
-offset_bottom = 260.0
+offset_left = 200.0
+offset_top = 116.0
+offset_right = 440.0
+offset_bottom = 244.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hud")
 
 [node name="VBox" type="VBoxContainer" parent="GameOverUI/Panel" unique_id=299642979]
 layout_mode = 2

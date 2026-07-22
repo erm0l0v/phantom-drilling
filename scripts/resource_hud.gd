@@ -1,8 +1,8 @@
 extends CanvasLayer
 
-@onready var oxygen_label: Label = $Panel/VBox/OxygenLabel
-@onready var coal_label: Label = $Panel/VBox/CoalLabel
-@onready var energy_label: Label = $Panel/VBox/EnergyLabel
+@onready var oxygen_label: Label = $Panel/VBox/OxygenRow/OxygenLabel
+@onready var coal_label: Label = $Panel/VBox/CoalRow/CoalLabel
+@onready var energy_label: Label = $Panel/VBox/EnergyRow/EnergyLabel
 
 
 func _ready() -> void:
@@ -11,12 +11,12 @@ func _ready() -> void:
 
 
 func _on_resources_changed(totals: Dictionary, rates: Dictionary) -> void:
-	oxygen_label.text = _format_line("Oxygen", totals, rates, ResourceManager.ResourceType.OXYGEN)
-	coal_label.text = _format_line("Coal", totals, rates, ResourceManager.ResourceType.COAL)
-	energy_label.text = _format_line("Energy", totals, rates, ResourceManager.ResourceType.ENERGY)
+	oxygen_label.text = _format_line(totals, rates, ResourceManager.ResourceType.OXYGEN)
+	coal_label.text = _format_line(totals, rates, ResourceManager.ResourceType.COAL)
+	energy_label.text = _format_line(totals, rates, ResourceManager.ResourceType.ENERGY)
 
 
-func _format_line(label: String, totals: Dictionary, rates: Dictionary, resource: int) -> String:
+func _format_line(totals: Dictionary, rates: Dictionary, resource: int) -> String:
 	var total: float = totals[resource]
 	var rate: float = rates[resource]
-	return "%s: %d (+%d/s)" % [label, floori(total), roundi(rate)]
+	return "%d (+%d/s)" % [floori(total), roundi(rate)]

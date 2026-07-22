@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="TextBorderVisuals" format=3]
+
+[ext_resource type="Script" path="res://scripts/text_border_visuals.gd" id="1_visuals"]
+[ext_resource type="Texture2D" uid="uid://dsa6pdpyqvod1" path="res://assets/text_border.png" id="2_sheet"]
+
+[resource]
+script = ExtResource("1_visuals")
+tile_sheet = ExtResource("2_sheet")
